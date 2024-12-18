@@ -6,6 +6,7 @@
 #
 
 import random
+from gettext import gettext as _
 
 from photofilmstrip.action.IAction import IAction
 

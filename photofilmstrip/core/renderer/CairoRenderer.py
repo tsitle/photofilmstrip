@@ -7,6 +7,7 @@
 
 import array
 import time
+from gettext import gettext as _
 
 try:
     import wx

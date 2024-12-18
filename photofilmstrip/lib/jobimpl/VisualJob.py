@@ -3,6 +3,8 @@
 # Copyright (C) 2018 Jens Goepfert
 #
 
+from gettext import gettext as _
+
 from .IVisualJob import IVisualJob
 from .IVisualJobHandler import IVisualJobHandler
 from .Job import Job

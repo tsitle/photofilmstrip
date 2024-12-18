@@ -10,7 +10,7 @@ import sys
 import traceback
 import urllib.parse
 import urllib.request
-
+from gettext import gettext as _
 import wx
 from wx.lib.wordwrap import wordwrap
 

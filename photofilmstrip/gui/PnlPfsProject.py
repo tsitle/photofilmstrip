@@ -7,7 +7,7 @@
 
 import os
 import logging
-
+from gettext import gettext as _
 import wx
 
 from photofilmstrip.action.ActionAutoPath import ActionAutoPath

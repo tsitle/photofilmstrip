@@ -6,6 +6,7 @@
 #
 
 import wx
+from gettext import gettext as _
 
 from photofilmstrip.lib.Settings import Settings
 from photofilmstrip.gui.helper import CreateMenuItem

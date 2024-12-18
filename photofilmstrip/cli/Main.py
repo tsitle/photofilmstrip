@@ -7,6 +7,7 @@
 
 import argparse
 import os, time, logging
+from gettext import gettext as _
 
 from photofilmstrip import Constants
 

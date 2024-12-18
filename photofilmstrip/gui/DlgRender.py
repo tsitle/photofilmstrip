@@ -8,6 +8,7 @@
 
 import wx
 import wx.adv
+from gettext import gettext as _
 
 from photofilmstrip.core.BaseRenderer import MetaBaseRenderer
 from photofilmstrip.core.OutputProfile import (

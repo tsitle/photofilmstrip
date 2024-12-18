@@ -7,6 +7,7 @@
 
 import enum
 import os
+from gettext import gettext as _
 
 from photofilmstrip.lib.common.ObserverPattern import Observable
 from photofilmstrip.lib.util import CheckFile, FILE_EXTENSIONS_AUDIO, \

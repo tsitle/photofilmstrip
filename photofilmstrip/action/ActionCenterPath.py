@@ -5,6 +5,8 @@
 # Copyright (C) 2013 Jens Goepfert
 #
 
+from gettext import gettext as _
+
 from photofilmstrip.action.IAction import IAction
 
 from photofilmstrip.core.Aspect import Aspect

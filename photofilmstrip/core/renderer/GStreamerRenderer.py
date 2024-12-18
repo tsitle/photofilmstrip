@@ -8,6 +8,7 @@
 import logging
 import os
 import threading
+from gettext import gettext as _
 
 import queue
 

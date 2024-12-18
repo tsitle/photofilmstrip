@@ -8,6 +8,7 @@
 import time
 
 import wx
+from gettext import gettext as _
 
 from photofilmstrip.lib.Settings import Settings
 from photofilmstrip.core.ProjectFile import ProjectFile

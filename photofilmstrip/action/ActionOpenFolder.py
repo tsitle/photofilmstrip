@@ -7,6 +7,7 @@
 
 import os
 import subprocess
+from gettext import gettext as _
 
 from photofilmstrip.action.IAction import IAction
 

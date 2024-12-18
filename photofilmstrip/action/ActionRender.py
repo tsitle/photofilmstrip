@@ -7,6 +7,7 @@
 
 import logging
 import os
+from gettext import gettext as _
 
 from photofilmstrip.action.IAction import IAction
 

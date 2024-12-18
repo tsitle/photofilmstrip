@@ -6,6 +6,7 @@
 #
 
 import os
+from gettext import gettext as _
 
 from photofilmstrip.core.BaseRenderer import BaseRenderer
 

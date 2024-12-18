@@ -6,6 +6,7 @@
 # Copyright (C) 2010 Jens Goepfert
 #
 
+from gettext import gettext as _
 import wx
 
 from photofilmstrip.core.Aspect import Aspect

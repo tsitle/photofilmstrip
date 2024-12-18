@@ -5,6 +5,7 @@
 # Copyright (C) 2011 Jens Goepfert
 #
 
+from gettext import gettext as _
 import gettext
 import os
 

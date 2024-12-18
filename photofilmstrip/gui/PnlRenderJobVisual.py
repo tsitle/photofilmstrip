@@ -5,6 +5,7 @@
 # Copyright (C) 2008 Jens Goepfert
 #
 
+from gettext import gettext as _
 import wx
 
 from photofilmstrip.action.WxAction import WxAction

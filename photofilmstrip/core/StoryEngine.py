@@ -10,6 +10,7 @@ import os
 import re
 import threading
 import time
+from gettext import gettext as _
 
 from gi.repository import Gst, GES
 from gi.repository import GstPbutils

@@ -10,6 +10,7 @@ import optparse
 import os
 import subprocess
 import sys
+from gettext import gettext as _
 
 from photofilmstrip.lib.jobimpl.IVisualJobManager import IVisualJobManager
 from photofilmstrip.lib.jobimpl.JobManager import JobManager

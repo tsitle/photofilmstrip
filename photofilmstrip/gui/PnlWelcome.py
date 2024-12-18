@@ -6,6 +6,7 @@
 #
 
 import os
+from gettext import gettext as _
 import wx
 import wx.html
 import wx.lib.wxpTag  # import needed to initialize html tag 'wxp'; pylint: disable=unused-import

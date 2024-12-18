@@ -6,7 +6,7 @@
 #
 
 import os
-
+from gettext import gettext as _
 import wx
 
 from photofilmstrip import Constants

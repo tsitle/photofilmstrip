@@ -6,6 +6,7 @@
 #
 
 import os
+from gettext import gettext as _
 
 from photofilmstrip.core.Subtitle import SubtitleSrt
 from photofilmstrip.core import PILBackend

@@ -5,7 +5,7 @@
 #
 
 import time
-
+from gettext import gettext as _
 import wx
 
 from .WxVisualJobHandler import WxVisualJobHandler, EVT_JOB_UPDATE

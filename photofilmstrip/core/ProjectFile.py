@@ -9,6 +9,7 @@ import logging
 import os
 import random
 import sqlite3
+from gettext import gettext as _
 
 from photofilmstrip.core import PILBackend
 from photofilmstrip.core.Aspect import Aspect

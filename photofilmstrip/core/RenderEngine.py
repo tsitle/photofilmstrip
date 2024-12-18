@@ -6,6 +6,7 @@
 #
 
 import os
+from gettext import gettext as _
 
 from photofilmstrip.core.tasks import TaskCropResize, TaskTrans, TaskSubtitle
 from photofilmstrip.core.Picture import Picture

@@ -7,6 +7,7 @@
 
 import io
 import logging
+from gettext import gettext as _
 
 
 class MetaBaseRenderer(type):
