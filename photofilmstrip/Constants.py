@@ -18,7 +18,7 @@ if getattr(sys, "frozen", False):
 else:
     APP_DIR = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "..")
 
-VERSION_SUFFIX = 'b4'
+VERSION_SUFFIX = 'b5'
 
 APP_NAME = "PhotoFilmStrip"
 APP_VERSION = "4.0.0"
