@@ -271,7 +271,11 @@ class ProjectFile:
 
         picList = []
         for row in cur:
-            imgFile = row["filename"]
+            imgFile: str = row["filename"]
+            if os.name == "nt" and imgFile.startswith("/"):
+                imgFile = "c:" + imgFile.replace("/", "\\")
+            elif os.name != "nt" and len(imgFile) >= 3 and imgFile[1] == ":" and imgFile[2] == "\\":
+                imgFile = imgFile[2:].replace("\\", "/")
             imgPath = os.path.dirname(imgFile)
             self._StepProgress(_("Loading '%s' ...") % (os.path.basename(imgFile)))
 
