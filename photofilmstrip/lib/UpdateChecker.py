@@ -6,13 +6,15 @@
 #
 
 import threading
-import urllib.request
-import re
+#import urllib.request
+#import re
+
+from photofilmstrip import Constants
 
 
 class UpdateChecker(threading.Thread):
 
-    URL = "http://www.photofilmstrip.org/update.txt"
+    URL = Constants.APP_URL + "/update.txt"
 
     def __init__(self):
         threading.Thread.__init__(self, name="UpdateCheck")

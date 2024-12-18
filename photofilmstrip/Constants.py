@@ -28,6 +28,6 @@ APP_SLOGAN = "PhotoFilmStrip - Creates movies out of your pictures."
 APP_DESCRIPTION = """\
 PhotoFilmStrip creates movies out of your pictures in just 3 steps. First select your photos, customize the motion path and render the video. There are several output possibilities for VCD, SVCD, DVD up to FULL-HD.
 """
-APP_URL = "http://www.photofilmstrip.org"
+APP_URL = "https://no-website-yet.com"
 DEVELOPERS = ["Jens Göpfert", "Thomas S."]
 TRANSLATORS = ["Teza Lprod - http://lprod.org", "geogeo - http://www.geogeo.gr"]

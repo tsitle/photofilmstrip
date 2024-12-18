@@ -98,7 +98,9 @@ class DlgBugReport(wx.Dialog):
         params = params.encode('utf_8')
         try:
             fd = urllib.request.urlopen(
-                "http://www.photofilmstrip.org/bugreport.php", params)
+                    Constants.APP_URL + "/bugreport.php",
+                    params
+                )
             result = fd.read()
             result = result.decode("utf-8")
         except IOError:
