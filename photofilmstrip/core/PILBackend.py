@@ -99,7 +99,15 @@ def __CreateDummyImage(message):
     img = Image.new("RGB", (width, height), (255, 255, 255))
 
     draw = ImageDraw.Draw(img)
-    textWidth, textHeight = draw.textsize(message)
+
+    from PIL import ImageFont
+    tmpDefaultFont = ImageFont.load_default()
+    textWidth = draw.textlength(message, font=tmpDefaultFont)
+    tmpTextRows = message.count("\n")
+    tmpFontMet = tmpDefaultFont.getmetrics()
+    tmpFontSize = tmpFontMet[0] - tmpFontMet[1]
+    textHeight = tmpFontSize * (tmpTextRows + 1)
+
     x = (width - textWidth) // 2
     y = (height - textHeight * 2)
     draw.text((x, y), message, fill=(0, 0, 0))

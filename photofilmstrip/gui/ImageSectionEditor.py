@@ -122,8 +122,10 @@ class ImageSectionEditor(wx.Panel, Observer):
 
     def __DrawBitmap(self, dc):
         if self._imgProxy.IsOk():
-            left, top = self.__GetBmpTopLeft()
-            dc.DrawBitmap(self._imgProxy.GetBitmap(), left, top)
+            tmpBmp = self._imgProxy.GetBitmap()
+            if tmpBmp is not None:
+                left, top = self.__GetBmpTopLeft()
+                dc.DrawBitmap(tmpBmp, left, top)
 
     def __GetBmpTopLeft(self):
         if not self._imgProxy.IsOk():
@@ -676,6 +678,8 @@ class ImageProxy(Observable):
 
     def Scale(self, width, height):
         if not (width > 0 and height > 0):
+            return
+        if self._wxImg is None:
             return
         img = self._wxImg.Scale(width, height)
         self._wxBmp = img.ConvertToBitmap()

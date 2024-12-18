@@ -6,21 +6,18 @@
 #
 
 import base64
-import datetime
 import glob
-import sys, os
-import sqlite3
+import sys
+import os
 import unittest
 import zipfile
-
-from distutils import log
-from distutils.command.build import build
-from distutils.command.clean import clean
-from distutils.command.sdist import sdist
-from distutils.core import setup
-from distutils.core import Command
-from distutils.dir_util import remove_tree
-from distutils.sysconfig import get_python_lib
+import logging
+import shutil
+from sysconfig import get_path
+from setuptools.command.build import build
+from setuptools.command.sdist import sdist
+from setuptools import setup
+from setuptools import Command
 
 try:
     from sphinx.application import Sphinx
@@ -46,15 +43,42 @@ else:
     MSGFMT = ["msgfmt"]
 
 
-class pfs_clean(clean):
+class pfs_clean(Command):
+    sub_commands = []
+    user_options = []
+
+    def _clean_project(self):
+        paths_to_clean = [
+            "build",
+            "dist",
+            "*.egg-info",
+            "__pycache__",
+        ]
+        for path in paths_to_clean:
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    gLogger.info(f"Removing path '{path}'")
+                    shutil.rmtree(path)
+                else:
+                    gLogger.info(f"Removing file '{path}'")
+                    os.remove(path)
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
 
     def run(self):
-        clean.run(self)
+        self._clean_project()
 
         for directory in (os.path.join(WORKDIR, "build"),
                           ):
             if os.path.exists(directory):
-                remove_tree(directory, 1)
+                try:
+                    shutil.rmtree(directory)
+                except FileNotFoundError:
+                    pass
 
         for fname in (os.path.join(WORKDIR, "version.info"),
                       os.path.join(WORKDIR, "MANIFEST"),
@@ -185,11 +209,11 @@ class pfs_build(build):
         try:
             from wx.tools.img2py import img2py
         except ImportError:
-            log.warn("Cannot update image resources! Using images.py from source")
+            gLogger.error("Cannot update image resources! Using images.py from source")
             return
 
         if sys.platform.startswith("linux") and os.getenv("DISPLAY") is None:
-            log.warn("Cannot update image resources! img2py needs X")
+            gLogger.error("Cannot update image resources! img2py needs X")
             return
 
         imgDir = os.path.abspath(os.path.join("res", "icons"))
@@ -362,7 +386,7 @@ class pfs_exe(Command):
             for f in filelist:
                 self.copy_file(f, targetDir)
 
-        site_packages = get_python_lib()
+        site_packages = get_path("purelib")
         targetDir = self.target_dir
         dllDirGnome = os.path.join(site_packages, "gst-dist")
         for dll in glob.glob(os.path.join(dllDirGnome, "bin", "*")):
@@ -402,7 +426,7 @@ class pfs_win_portable(Command):
         else:
             bitSuffix = "win32"
 
-        log.info("building portable zip...")
+        gLogger.info("building portable zip...")
         if not os.path.exists("release"):
             os.makedirs("release")
 
@@ -410,11 +434,11 @@ class pfs_win_portable(Command):
             "build/dist",
 #            virtualFolder="PhotoFilmStrip-%s" % ver,
             stripFolders=2)
-        log.info("    done.")
+        gLogger.info("    done.")
 
 
 def Zip(zipFile, srcDir, stripFolders=0, virtualFolder=None):
-    log.info("zip %s to %s" % (srcDir, zipFile))
+    gLogger.info("zip %s to %s" % (srcDir, zipFile))
     if not os.path.isdir(os.path.dirname(zipFile)):
         os.makedirs(os.path.dirname(zipFile))
 
@@ -432,13 +456,13 @@ def Zip(zipFile, srcDir, stripFolders=0, virtualFolder=None):
                 zipTarget = os.path.join(fldr, fname)
             else:
                 zipTarget = os.path.join(virtualFolder, fldr, fname)
-            log.info("  deflate %s" % zipTarget)
+            gLogger.info("  deflate %s" % zipTarget)
             zf.write(os.path.join(dirpath, fname), zipTarget)
     zf.close()
 
 
 def Unzip(zipFile, targetDir, stripFolders=0):
-    log.info("unzip %s to %s" % (zipFile, targetDir))
+    gLogger.info("unzip %s to %s" % (zipFile, targetDir))
     if not os.path.isdir(targetDir):
         os.makedirs(targetDir)
 
@@ -448,7 +472,7 @@ def Unzip(zipFile, targetDir, stripFolders=0):
         if eleInfo.file_size == 0:
             continue
 
-        log.info("  inflate %s (%s)" % (ele, eleInfo.file_size))
+        gLogger.info("  inflate %s (%s)" % (ele, eleInfo.file_size))
         fldr, fname = os.path.split(ele)
 
         if stripFolders > 0:
@@ -495,7 +519,7 @@ def file2py(source, python_file, append, resName):
         out.write("catalog['%s'] = %s\n" % (resName, varName))
         out.write("\n")
 
-    print("Embedded %s using %s into %s" % (source, resName, python_file))
+    gLogger.info("Embedded %s using %s into %s" % (source, resName, python_file))
 
 
 MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -514,6 +538,12 @@ MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   </asmv3:application>
 </assembly>
 """
+
+# Note that setup() will reset the logging level.
+# In order to see gLogger.info() outputs run setup.py with the arg '-v'.
+# gLogger.debug() won't work at all
+gLogger = logging.getLogger(__name__)
+logging.basicConfig(format="%(levelname)s:%(message)s", encoding="utf-8", level=logging.WARNING)
 
 platform_scripts = []
 platform_data = []
