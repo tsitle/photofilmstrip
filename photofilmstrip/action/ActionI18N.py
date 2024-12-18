@@ -28,9 +28,13 @@ class ActionI18N(IAction):
         curLang = Settings().GetLanguage()
 
         localeDir = None
-        for localeDir in (os.path.join(Constants.APP_DIR, "share", "locale"),
-                          os.path.join(Constants.APP_DIR, "locale"),):
-            if os.path.isdir(localeDir):
+        for tmpLocaleDir in (
+                    os.path.join(Constants.APP_DIR, "share", "locale"),
+                    os.path.join(Constants.APP_DIR, "locale"),
+                    os.path.join(Constants.APP_DIR, "mo")
+                ):
+            if os.path.isdir(tmpLocaleDir):
+                localeDir = tmpLocaleDir
                 break
 
         if localeDir is None:
