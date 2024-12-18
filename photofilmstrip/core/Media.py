@@ -7,7 +7,7 @@
 
 import enum
 import os
-from gettext import gettext as _
+#from gettext import gettext as _  # only to point out where the function '_()' comes from - but do not actually import - it won't work
 
 from photofilmstrip.lib.common.ObserverPattern import Observable
 from photofilmstrip.lib.util import CheckFile, FILE_EXTENSIONS_AUDIO, \

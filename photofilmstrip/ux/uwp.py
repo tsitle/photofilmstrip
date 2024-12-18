@@ -10,7 +10,7 @@ import optparse
 import os
 import subprocess
 import sys
-from gettext import gettext as _
+#from gettext import gettext as _  # only to point out where the function '_()' comes from - but do not actually import - it won't work
 
 from photofilmstrip.lib.jobimpl.IVisualJobManager import IVisualJobManager
 from photofilmstrip.lib.jobimpl.JobManager import JobManager

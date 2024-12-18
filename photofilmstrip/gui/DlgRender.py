@@ -8,7 +8,7 @@
 
 import wx
 import wx.adv
-from gettext import gettext as _
+#from gettext import gettext as _  # only to point out where the function '_()' comes from - but do not actually import - it won't work
 
 from photofilmstrip.core.BaseRenderer import MetaBaseRenderer
 from photofilmstrip.core.OutputProfile import (

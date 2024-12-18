@@ -5,7 +5,7 @@
 # Copyright (C) 2018 Jens Goepfert
 #
 import base64
-from gettext import gettext as _
+#from gettext import gettext as _  # only to point out where the function '_()' comes from - but do not actually import - it won't work
 
 import gi
 gi.require_version('Notify', '0.7')

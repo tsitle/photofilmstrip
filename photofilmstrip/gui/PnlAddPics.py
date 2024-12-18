@@ -5,7 +5,7 @@
 # Copyright (C) 2010 Jens Goepfert
 #
 
-from gettext import gettext as _
+#from gettext import gettext as _  # only to point out where the function '_()' comes from - but do not actually import - it won't work
 import wx
 
 
