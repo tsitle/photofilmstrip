@@ -660,8 +660,8 @@ setup(
     license="GPLv2",
     description=Constants.APP_SLOGAN,
     long_description=Constants.APP_DESCRIPTION,
-    author=Constants.DEVELOPERS[0],
-    author_email="info@photofilmstrip.org",
+    author=Constants.DEVELOPERS[1],
+    author_email="technisandk@gmail.com",
     url=Constants.APP_URL,
 
     packages=['photofilmstrip',
