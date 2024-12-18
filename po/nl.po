@@ -1063,7 +1063,7 @@ msgstr "Bewaar Project"
 
 #: photofilmstrip/gui/WxProjectFile.py:100
 msgid ""
-"Some images does not exist in the folder '%s' anymore. If the files has "
+"Some images do not exist in the folder '%s' anymore. If the files have "
 "moved you can select the new path. Do you want to select a new path?"
 msgstr ""
 "Sommige afbeeldingen bestaat niet meer in de map '%s' . Als de bestanden "

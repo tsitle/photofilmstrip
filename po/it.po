@@ -1067,7 +1067,7 @@ msgstr "Salvataggio in corso del progetto %s"
 
 #: photofilmstrip/gui/WxProjectFile.py:100
 msgid ""
-"Some images does not exist in the folder '%s' anymore. If the files has "
+"Some images do not exist in the folder '%s' anymore. If the files have "
 "moved you can select the new path. Do you want to select a new path?"
 msgstr ""
 "Alcune immagini non esistono piu' nella cartella '%s'. Se i file sono stati "
