@@ -305,7 +305,9 @@ class FrmMain(wx.Frame, Observer, WxVisualJobManager):
         info.Name = Constants.APP_NAME
         info.Version = Constants.APP_VERSION_FULL
         info.Copyright = "(C) 2024 %s" % ", ".join(Constants.DEVELOPERS)
-        info.Description = wordwrap(_(Constants.APP_DESCRIPTION),
+        info.Description = wordwrap(_("PhotoFilmStrip creates movies out of your pictures in just 3 steps. "
+                                      "First select your photos, customize the motion path and render the video. "
+                                      "There are several output possibilities for VCD, SVCD, DVD up to FULL-HD."),
                                     350,
                                     wx.ClientDC(self))
         info.WebSite = (Constants.APP_URL, "%s %s" % (Constants.APP_NAME, _("online")))

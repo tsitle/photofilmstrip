@@ -25,9 +25,7 @@ APP_VERSION = "4.0.0"
 APP_VERSION_SUFFIX = "%s%s" % (APP_VERSION, VERSION_SUFFIX)
 APP_VERSION_FULL = "%s-%s" % (APP_VERSION_SUFFIX, SCM_REV)
 APP_SLOGAN = "PhotoFilmStrip - Creates movies out of your pictures."
-APP_DESCRIPTION = """\
-PhotoFilmStrip creates movies out of your pictures in just 3 steps. First select your photos, customize the motion path and render the video. There are several output possibilities for VCD, SVCD, DVD up to FULL-HD.
-"""
+APP_DESCRIPTION = "PhotoFilmStrip creates movies out of your pictures in just 3 steps"
 APP_URL = "https://no-website-yet.com"
 DEVELOPERS = ["Jens Göpfert", "Thomas S."]
 TRANSLATORS = ["Teza Lprod - http://lprod.org", "geogeo - http://www.geogeo.gr"]
