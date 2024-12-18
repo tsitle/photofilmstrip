@@ -14,6 +14,8 @@ import zipfile
 import logging
 import shutil
 from sysconfig import get_path
+from typing import List
+
 from setuptools.command.build import build
 from setuptools.command.sdist import sdist
 from setuptools import setup
@@ -29,6 +31,7 @@ try:
     from cx_Freeze import Executable
 except ImportError:
     BuildEXE = None
+    Executable = None
 
 from photofilmstrip import Constants
 
@@ -43,7 +46,7 @@ else:
     MSGFMT = ["msgfmt"]
 
 
-class pfs_clean(Command):
+class PfsClean(Command):
     sub_commands = []
     user_options = []
 
@@ -87,7 +90,7 @@ class pfs_clean(Command):
                 os.remove(fname)
 
 
-class pfs_scm_info(Command):
+class PfsScmInfo(Command):
 
     description = "generates _scmInfo.py in source folder"
 
@@ -119,14 +122,14 @@ class pfs_scm_info(Command):
             fd.close()
 
 
-class pfs_sdist(sdist):
+class PfsSdist(sdist):
 
     sub_commands = [
         ('scm_info', lambda x: True),
     ] + sdist.sub_commands
 
 
-class pfs_docs(Command):
+class PfsDocs(Command):
 
     description = "generates sphinx docs"
 
@@ -180,7 +183,7 @@ class pfs_docs(Command):
         ])
 
 
-class pfs_build(build):
+class PfsBuild(build):
 
     sub_commands = [
         ('scm_info', lambda x: True),
@@ -317,7 +320,7 @@ class pfs_build(build):
                 )
 
 
-class pfs_test(Command):
+class PfsTest(Command):
 
     description = "runs unit tests"
 
@@ -337,7 +340,7 @@ class pfs_test(Command):
         runner.run(suite)
 
 
-class pfs_exe(Command):
+class PfsExe(Command):
 
     description = "create an executable dist for MS Windows (py2exe)"
 
@@ -399,7 +402,7 @@ class pfs_exe(Command):
                            targetDir)
 
 
-class pfs_win_portable(Command):
+class PfsWinPortable(Command):
 
     description = "create a portable executable for MS Windows"
 
@@ -430,23 +433,23 @@ class pfs_win_portable(Command):
         if not os.path.exists("release"):
             os.makedirs("release")
 
-        Zip(os.path.join("dist", "photofilmstrip-{0}-{1}.zip".format(ver, bitSuffix)),
+        create_zip_file(os.path.join("dist", "photofilmstrip-{0}-{1}.zip".format(ver, bitSuffix)),
             "build/dist",
-#            virtualFolder="PhotoFilmStrip-%s" % ver,
-            stripFolders=2)
+                        #virtualFolder="PhotoFilmStrip-%s" % ver,
+                        stripFolders=2)
         gLogger.info("    done.")
 
 
-def Zip(zipFile, srcDir, stripFolders=0, virtualFolder=None):
+def create_zip_file(zipFile: str, srcDir: str, stripFolders: int=0, virtualFolder: str=None):
     gLogger.info("zip %s to %s" % (srcDir, zipFile))
     if not os.path.isdir(os.path.dirname(zipFile)):
         os.makedirs(os.path.dirname(zipFile))
 
     zf = zipfile.ZipFile(zipFile, "w", zipfile.ZIP_DEFLATED)
     for dirpath, dirnames, filenames in os.walk(srcDir):
-        fldr = dirpath
+        fldr: str = dirpath
         if stripFolders > 0:
-            fldrs = os.path.normpath(fldr).split(os.sep)[stripFolders:]
+            fldrs: List[str] = os.path.normpath(fldr).split(os.sep)[stripFolders:]
             if fldrs:
                 fldr = os.path.join(*fldrs)
             else:
@@ -461,7 +464,7 @@ def Zip(zipFile, srcDir, stripFolders=0, virtualFolder=None):
     zf.close()
 
 
-def Unzip(zipFile, targetDir, stripFolders=0):
+def unzip_file(zipFile: str, targetDir: str, stripFolders: int=0):
     gLogger.info("unzip %s to %s" % (zipFile, targetDir))
     if not os.path.isdir(targetDir):
         os.makedirs(targetDir)
@@ -473,16 +476,18 @@ def Unzip(zipFile, targetDir, stripFolders=0):
             continue
 
         gLogger.info("  inflate %s (%s)" % (ele, eleInfo.file_size))
-        fldr, fname = os.path.split(ele)
+        tmpEleSplit = os.path.split(ele)
+        fldr: str = tmpEleSplit[0]
+        fname: str = tmpEleSplit[1]
 
         if stripFolders > 0:
-            fldrs = os.path.normpath(fldr).split(os.sep)[stripFolders:]
+            fldrs: List[str] = os.path.normpath(fldr).split(os.sep)[stripFolders:]
             if fldrs:
-                fldr = os.path.join(*fldrs)
+                fldr: str = os.path.join(*fldrs)
             else:
                 fldr = ""
 
-        eleFldr = os.path.join(targetDir, fldr)
+        eleFldr: str = os.path.join(targetDir, fldr)
         if not os.path.isdir(eleFldr):
             os.makedirs(eleFldr)
 
@@ -560,20 +565,20 @@ else:
             for icon in glob.glob(os.path.join(category, "*")):
                 icons.append(icon)
                 platform_data.append(("share/icons/hicolor/%s/%s" % \
-                                      (os.path.basename(size), \
-                                       os.path.basename(category)), \
+                                      (os.path.basename(size),
+                                       os.path.basename(category)),
                                        icons))
 
 setup(
     cmdclass={
-                "clean": pfs_clean,
-                "sdist": pfs_sdist,
-                "build": pfs_build,
-                "bdist_win": pfs_exe,
-                "bdist_winport": pfs_win_portable,
-                "scm_info": pfs_scm_info,
-                'build_sphinx': pfs_docs,
-                'test': pfs_test,
+                "clean": PfsClean,
+                "sdist": PfsSdist,
+                "build": PfsBuild,
+                "bdist_win": PfsExe,
+                "bdist_winport": PfsWinPortable,
+                "scm_info": PfsScmInfo,
+                'build_sphinx': PfsDocs,
+                'test': PfsTest,
                 "build_exe": BuildEXE,
               },
     verbose=False,
