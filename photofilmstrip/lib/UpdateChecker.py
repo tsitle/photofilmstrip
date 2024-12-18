@@ -25,24 +25,26 @@ class UpdateChecker(threading.Thread):
         self.start()
 
     def run(self):
-        try:
-            fd = urllib.request.urlopen(self.URL)
-#            fd = open('/home/jens/Projects/Python/PhotoFilmStrip/res/update.txt', 'r')
+        """
+        We deactivate the Update Check here for the time being
+        """
+        #try:
+        #    fd = urllib.request.urlopen(self.URL)
+        #    #fd = open('/home/jens/Projects/Python/PhotoFilmStrip/res/update.txt', 'r')
+        #    data = fd.read()
+        #except IOError:
+        #    self._checkDone = True
+        #    return
 
-            data = fd.read()
-        except IOError:
-            self._checkDone = True
-            return
+        #lines = data.decode("utf-8").split('\n')
 
-        lines = data.decode("utf-8").split('\n')
+        #ovMatch = re.match(r"(\d+).(\d+).(\d+)?(.+)?", lines.pop(0))
+        #if ovMatch:
+        #    self._onlineVersion = ".".join(ovMatch.groups()[:3])
+        #else:
+        #    return
 
-        ovMatch = re.match(r"(\d+).(\d+).(\d+)?(.+)?", lines.pop(0))
-        if ovMatch:
-            self._onlineVersion = ".".join(ovMatch.groups()[:3])
-        else:
-            return
-
-        self._changes = lines
+        #self._changes = lines
 
         self._checkDone = True
         self._isOk = True
@@ -54,10 +56,13 @@ class UpdateChecker(threading.Thread):
         return self._isOk
 
     def IsNewer(self, currentVersion):
-        if self.IsDone() and self.IsOk():
-            curTup = currentVersion.split(".")
-            newTup = self._onlineVersion.split(".")
-            return newTup > curTup
+        """
+        We deactivate the Update Check here for the time being
+        """
+        #if self.IsDone() and self.IsOk():
+        #    #curTup = currentVersion.split(".")
+        #    #newTup = self._onlineVersion.split(".")
+        #    return newTup > curTup
         return False
 
     def GetChanges(self):
