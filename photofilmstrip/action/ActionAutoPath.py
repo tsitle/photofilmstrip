@@ -56,6 +56,8 @@ class ActionAutoPath(IAction):
                 targetRect = (width - scaledWidth,
                               height - (scaledWidth / ratio),
                               scaledWidth, scaledWidth / ratio)
+            else:
+                targetRect = (0, 0, 0, 0)
 
         if random.randint(0, 1):
             targetRect, startRect = startRect, targetRect
