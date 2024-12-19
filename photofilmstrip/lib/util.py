@@ -47,9 +47,12 @@ def StartFile(filename):
 
 def GetDocDir(subfolder):
     basedir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    for docDir in (os.path.join("..", "share", "doc", "photofilmstrip", subfolder),  # linux
-                   os.path.join("share", "doc", "photofilmstrip", subfolder),  # win
-                   os.path.join("..", "build", "sphinx", subfolder)):  # source
+    for docDir in (
+                os.path.join("..", "share", "doc", "photofilmstrip", subfolder),  # linux
+                os.path.join("share", "doc", "photofilmstrip", subfolder),  # win
+                os.path.join("..", "build", "sphinx", subfolder),  # source (from ',/photofilmstrip/')
+                os.path.join("..", "sphinx", subfolder),  # source (from ',/build/scripts-x.xx/')
+            ):
         docDir = os.path.join(basedir, docDir)
         if os.path.isdir(docDir):
             return os.path.abspath(docDir)
@@ -59,9 +62,12 @@ def GetDocDir(subfolder):
 
 def GetDataDir(subfolder):
     basedir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    for dataDir in (os.path.join("..", "share", "photofilmstrip", subfolder),  # linux
-                   os.path.join("share", "photofilmstrip", subfolder),  # win
-                   os.path.join("..", "data", subfolder)):  # source
+    for dataDir in (
+                os.path.join("..", "share", "photofilmstrip", subfolder),  # linux
+                os.path.join("share", "photofilmstrip", subfolder),  # win
+                os.path.join("..", "data", subfolder),  # source (from ',/photofilmstrip/')
+                os.path.join("..", "..", "data", subfolder)  # source (from ',/build/scripts-x.xx/')
+            ):
         dataDir = os.path.join(basedir, dataDir)
         if os.path.isdir(dataDir):
             return os.path.abspath(dataDir)
