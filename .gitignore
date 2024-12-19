@@ -5,7 +5,8 @@
 
 /.idea
 
-/photofilmstrip.egg-info
+/photofilmstrip.egg-info/
+/docs/help/_build/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
