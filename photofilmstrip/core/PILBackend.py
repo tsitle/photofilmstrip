@@ -7,8 +7,9 @@
 
 import logging
 import io
+from typing import Union
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 from photofilmstrip.core.Picture import Picture
 
@@ -25,7 +26,7 @@ def ImageFromBuffer(size, buffr):
     return pilImg
 
 
-def RotateExif(pilImg):
+def __get_exif_orientation(pilImg):
     exifOrient = 274
     rotation = 0
     try:
@@ -35,28 +36,32 @@ def RotateExif(pilImg):
     except AttributeError:
         pass
     except Exception as err:
-        logging.debug("PILBackend.RotateExif(): %s", err, exc_info=1)
+        logging.debug("PILBackend.__get_exif_orientation(): %s", err, exc_info=True)
+    return rotation
+
+def RotateExif(pilImg):
+    rotation = __get_exif_orientation(pilImg)
 
     if rotation == 2:
         # flip horizontal
-        return pilImg.transpose(Image.FLIP_LEFT_RIGHT)
+        return pilImg.transpose(Image.FLIP_LEFT_RIGHT)  # pylint: disable=no-member
     elif rotation == 3:
         # rotate 180
         return pilImg.rotate(-180)
     elif rotation == 4:
         # flip vertical
-        return pilImg.transpose(Image.FLIP_TOP_BOTTOM)
+        return pilImg.transpose(Image.FLIP_TOP_BOTTOM)  # pylint: disable=no-member
     elif rotation == 5:
         # transpose
         pilImg = pilImg.rotate(-90, expand=1)
-        return pilImg.transpose(Image.FLIP_LEFT_RIGHT)
+        return pilImg.transpose(Image.FLIP_LEFT_RIGHT)  # pylint: disable=no-member
     elif rotation == 6:
         # rotate 90
         return pilImg.rotate(-90, expand=1)
     elif rotation == 7:
         # transverse
         pilImg = pilImg.rotate(-90, expand=1)
-        return pilImg.transpose(Image.FLIP_TOP_BOTTOM)
+        return pilImg.transpose(Image.FLIP_TOP_BOTTOM)  # pylint: disable=no-member
     elif rotation == 8:
         # rotate 270
         return pilImg.rotate(-270, expand=1)
@@ -66,11 +71,11 @@ def RotateExif(pilImg):
 
 def CropAndResize(pilImg, rect, size, draft=False):
     if draft:
-        filtr = Image.NEAREST
+        filtr = Image.NEAREST  # pylint: disable=no-member
     else:
-        filtr = Image.BILINEAR
+        filtr = Image.BILINEAR  # pylint: disable=no-member
     img = pilImg.transform(size,
-                           Image.AFFINE,
+                           Image.AFFINE,  # pylint: disable=no-member
                            [rect[2] / size[0], 0, rect[0],
                             0, rect[3] / size[1], rect[1]],
                            filtr)
@@ -100,8 +105,7 @@ def __CreateDummyImage(message):
 
     draw = ImageDraw.Draw(img)
 
-    from PIL import ImageFont
-    tmpDefaultFont = ImageFont.load_default()
+    tmpDefaultFont: Union[ImageFont.FreeTypeFont, ImageFont] = ImageFont.load_default()
     textWidth = draw.textlength(message, font=tmpDefaultFont)
     tmpTextRows = message.count("\n")
     tmpFontMet = tmpDefaultFont.getmetrics()
@@ -136,7 +140,7 @@ def __GetImage(picture):
         img = Image.open(picture.GetFilename())
         picture.SetDummy(False)
     except Exception as err:
-        logging.debug("PILBackend.GetImage(%s): %s", picture.GetFilename(), err, exc_info=1)
+        logging.debug("PILBackend.GetImage(%s): %s", picture.GetFilename(), err, exc_info=True)
         img = __CreateDummyImage(str(err))
         picture.SetDummy(True)
     return img
@@ -179,16 +183,7 @@ def GetImage(picture):
 
 
 def GetExifRotation(pilImg):
-    exifOrient = 274
-    rotation = 0
-    try:
-        exif = pilImg._getexif()  # pylint: disable=protected-access
-        if isinstance(exif, dict) and exifOrient in exif:
-            rotation = exif[exifOrient]
-    except AttributeError:
-        pass
-    except Exception as err:
-        logging.debug("PILBackend.RotateExif(): %s", err, exc_info=1)
+    rotation = __get_exif_orientation(pilImg)
 
     if rotation == 3:
         # rotate 180
@@ -237,15 +232,15 @@ def GetThumbnail(picture, width=None, height=None):
         thumbHeight = 0
 
     # prescale image to speed up processing
-    img.thumbnail((max(thumbWidth, thumbHeight), max(thumbWidth, thumbHeight)), Image.NEAREST)
+    img.thumbnail((max(thumbWidth, thumbHeight), max(thumbWidth, thumbHeight)), Image.NEAREST)  # pylint: disable=no-member
     img = __ProcessImage(img, picture)
 
     # make the real thumbnail
-    img.thumbnail((thumbWidth, thumbHeight), Image.NEAREST)
+    img.thumbnail((thumbWidth, thumbHeight), Image.NEAREST)  # pylint: disable=no-member
 
-#    newImg = Image.new("RGB", (thumbWidth, thumbHeight), 0)
-#    newImg.paste(img, (abs(thumbWidth - img.size[0]) / 2,
-#                       abs(thumbHeight - img.size[1]) / 2))
-#    img = newImg
+    #newImg = Image.new("RGB", (thumbWidth, thumbHeight), 0)
+    #newImg.paste(img, (abs(thumbWidth - img.size[0]) / 2,
+    #                   abs(thumbHeight - img.size[1]) / 2))
+    #img = newImg
 
     return img
