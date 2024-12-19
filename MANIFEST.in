@@ -4,9 +4,8 @@ recursive-include docs *
 
 include windows/photofilmstrip.bat
 include windows/photofilmstrip-cli.bat
-include CHANGES
 include COPYING
 include LICENSE
 include Makefile
 include MANIFEST.in
-include README
+include README.md
