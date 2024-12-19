@@ -80,7 +80,8 @@ def CropAndResize(pilImg, rect, size, draft=False):
 def Transition(kind, pilImg1, pilImg2, percentage):
     if kind == Picture.TRANS_FADE:
         img = Image.blend(pilImg1, pilImg2, percentage)
-    elif kind == Picture.TRANS_ROLL:
+        return img
+    if kind == Picture.TRANS_ROLL:
         xsize, ysize = pilImg1.size
         delta = int(xsize * percentage)
         part1 = pilImg2.crop((0, 0, delta, ysize))
@@ -88,9 +89,8 @@ def Transition(kind, pilImg1, pilImg2, percentage):
         image = pilImg2.copy()
         image.paste(part2, (0, 0, xsize - delta, ysize))
         image.paste(part1, (xsize - delta, 0, xsize, ysize))
-        img = image
-
-    return img
+        return image
+    return None
 
 
 def __CreateDummyImage(message):
@@ -232,6 +232,9 @@ def GetThumbnail(picture, width=None, height=None):
     elif height is not None:
         thumbHeight = height
         thumbWidth = int(round(thumbHeight * aspect))
+    else:
+        thumbWidth = 0
+        thumbHeight = 0
 
     # prescale image to speed up processing
     img.thumbnail((max(thumbWidth, thumbHeight), max(thumbWidth, thumbHeight)), Image.NEAREST)
