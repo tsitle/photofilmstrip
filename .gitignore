@@ -1,7 +1,8 @@
-/venv*
+/venv-*
 /x-*.sh
 /x-Makefile
 /x-requirements.txt
+/.msys*/
 
 /.idea
 
@@ -20,6 +21,7 @@ sdist/
 var/
 locale/
 Tools/
+release/
 _scmInfo.py
 
 .settings
