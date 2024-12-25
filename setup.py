@@ -35,10 +35,12 @@ except ImportError:
 from photofilmstrip import Constants
 
 WORKDIR = os.path.dirname(os.path.abspath(sys.argv[0]))
-MSGFMT = os.path.join(getattr(sys,
-                              "base_prefix",
-                              os.path.dirname(sys.executable)),
-                      "Tools", "i18n", "msgfmt.py")
+MSGFMT = os.path.join(
+        getattr(sys, "base_prefix", os.path.dirname(sys.executable)),
+        "Tools",
+        "i18n",
+        "msgfmt.py"
+    )
 if os.path.isfile(MSGFMT):
     MSGFMT = [sys.executable, MSGFMT]
 else:
@@ -51,11 +53,12 @@ class PfsClean(Command):
 
     def _clean_project(self):
         paths_to_clean = [
-            "build",
-            "dist",
-            "*.egg-info",
-            "__pycache__",
-        ]
+                "build",
+                "dist",
+                "docs/help/_build",
+                "photofilmstrip.egg-info",
+                "photofilmstrip/_scmInfo.py",
+            ]
         for path in paths_to_clean:
             if os.path.exists(path):
                 if os.path.isdir(path):
@@ -74,17 +77,19 @@ class PfsClean(Command):
     def run(self):
         self._clean_project()
 
-        for directory in (os.path.join(WORKDIR, "build"),
-                          ):
+        for directory in (
+                    os.path.join(WORKDIR, "build"),
+                ):
             if os.path.exists(directory):
                 try:
                     shutil.rmtree(directory)
                 except FileNotFoundError:
                     pass
 
-        for fname in (os.path.join(WORKDIR, "version.info"),
-                      os.path.join(WORKDIR, "MANIFEST"),
-                      ):
+        for fname in (
+                    os.path.join(WORKDIR, "version.info"),
+                    os.path.join(WORKDIR, "MANIFEST"),
+                ):
             if os.path.exists(fname):
                 os.remove(fname)
 
@@ -94,8 +99,8 @@ class PfsScmInfo(Command):
     description = "generates _scmInfo.py in source folder"
 
     user_options = [
-        ('scm-rev=', None, 'The SCM revision'),
-    ]
+            ('scm-rev=', None, 'The SCM revision'),
+        ]
 
     sub_commands = []
 
@@ -124,8 +129,9 @@ class PfsScmInfo(Command):
 class PfsSdist(sdist):
 
     sub_commands = [
-        ('scm_info', lambda x: True),
-    ] + sdist.sub_commands
+            ('scm_info', lambda x: True),
+            ('build', lambda x: True),
+        ] + sdist.sub_commands
 
 
 class PfsDocs(Command):
@@ -133,12 +139,12 @@ class PfsDocs(Command):
     description = "generates sphinx docs"
 
     user_options = [
-        ('config-dir=', 'c', 'Location of the configuration directory'),
-        ('project=', None, 'The documented project\'s name'),
-        ('version=', None, 'The short X.Y version'),
-        ('release=', None, 'The full version, including alpha/beta/rc tags'),
-        ('builder=', 'b', 'The builder (or builders) to use.')
-    ]
+            ('config-dir=', 'c', 'Location of the configuration directory'),
+            ('project=', None, 'The documented project\'s name'),
+            ('version=', None, 'The short X.Y version'),
+            ('release=', None, 'The full version, including alpha/beta/rc tags'),
+            ('builder=', 'b', 'The builder (or builders) to use.')
+        ]
     sub_commands = []
 
     def initialize_options(self):
@@ -169,9 +175,14 @@ class PfsDocs(Command):
             builder_target_dir = os.path.join(build_dir, builder)
             self.mkpath(builder_target_dir)
 
-            app = Sphinx(self.config_dir, self.config_dir,
-                         builder_target_dir, doctree_dir,
-                         builder, confoverrides)
+            app = Sphinx(
+                    self.config_dir,
+                    self.config_dir,
+                    builder_target_dir,
+                    doctree_dir,
+                    builder,
+                    confoverrides
+                )
             app.build()
 
         self.distribution.data_files.extend([
@@ -179,19 +190,19 @@ class PfsDocs(Command):
                 (os.path.join("share", "doc", "photofilmstrip", "html"), glob.glob("build/sphinx/html/*.*")),
                 (os.path.join("share", "doc", "photofilmstrip", "html", "_sources"), glob.glob("build/sphinx/html/_sources/*.*")),
                 (os.path.join("share", "doc", "photofilmstrip", "html", "_static"), glob.glob("build/sphinx/html/_static/*.*"))
-        ])
+            ])
 
 
 class PfsBuild(build):
 
     sub_commands = [
-        ('scm_info', lambda x: True),
-        ('build_sphinx', lambda x: True if Sphinx else False),
-    ] + build.sub_commands
+            ('scm_info', lambda x: True),
+            ('build_sphinx', lambda x: True if Sphinx else False),
+        ] + build.sub_commands
 
     user_options = [
-        ('build-exe=', None, 'Location of the configuration directory'),
-    ]
+            ('build-exe=', None, 'Location of the configuration directory'),
+        ]
 
     def initialize_options(self):
         build.initialize_options(self)
@@ -223,82 +234,84 @@ class PfsBuild(build):
             return
 
         target = os.path.join("photofilmstrip", "res", "images.py")
-        target_mtime = os.path.getmtime(target)
+        #target_mtime = os.path.getmtime(target)
 
         imgResources = (
-                        ("ICON", "photofilmstrip.svg"),
+                ("ICON", "photofilmstrip.svg"),
 
-                        ("PROJECT_NEW", "project_new.svg"),
-                        ("PROJECT_OPEN", "project_open.svg"),
-                        ("PROJECT_SAVE", "project_save.svg"),
-                        ("PROJECT_SAVE_D", "project_save_d.svg"),
-                        ("PROJECT_CLOSE", "project_close.svg"),
-                        ("PROJECT_CLOSE_D", "project_close_d.svg"),
-                        ("FOLDER_OPEN", "folder_open.svg"),
+                ("PROJECT_NEW", "project_new.svg"),
+                ("PROJECT_OPEN", "project_open.svg"),
+                ("PROJECT_SAVE", "project_save.svg"),
+                ("PROJECT_SAVE_D", "project_save_d.svg"),
+                ("PROJECT_CLOSE", "project_close.svg"),
+                ("PROJECT_CLOSE_D", "project_close_d.svg"),
+                ("FOLDER_OPEN", "folder_open.svg"),
 
-                        ("MOTION_START_TO_END", "motion_start_to_end.svg"),
-                        ("MOTION_END_TO_START", "motion_end_to_start.svg"),
-                        ("MOTION_SWAP", "motion_swap.svg"),
-                        ("MOTION_MANUAL", "motion_manual.svg"),
-                        ("MOTION_RANDOM", "motion_random.svg"),
-                        ("MOTION_RANDOM_D", "motion_random_d.svg"),
-                        ("MOTION_CENTER", "motion_center.svg"),
-                        ("MOTION_CENTER_D", "motion_center_d.svg"),
-                        ("LOCK", "lock.svg"),
-                        ("UNLOCK", "unlock.svg"),
+                ("MOTION_START_TO_END", "motion_start_to_end.svg"),
+                ("MOTION_END_TO_START", "motion_end_to_start.svg"),
+                ("MOTION_SWAP", "motion_swap.svg"),
+                ("MOTION_MANUAL", "motion_manual.svg"),
+                ("MOTION_RANDOM", "motion_random.svg"),
+                ("MOTION_RANDOM_D", "motion_random_d.svg"),
+                ("MOTION_CENTER", "motion_center.svg"),
+                ("MOTION_CENTER_D", "motion_center_d.svg"),
+                ("LOCK", "lock.svg"),
+                ("UNLOCK", "unlock.svg"),
 
-                        ("MENU", "menu.svg"),
-                        ("ABORT", "abort.svg"),
-                        ("LIST_REMOVE", "list_remove.svg"),
+                ("MENU", "menu.svg"),
+                ("ABORT", "abort.svg"),
+                ("LIST_REMOVE", "list_remove.svg"),
 
-                        ("RENDER", "render.svg"),
-                        ("RENDER_D", "render_d.svg"),
-                        ("IMPORT_PICTURES", "import_pictures.svg"),
-                        ("IMPORT_PICTURES_D", "import_pictures_d.svg"),
-                        ("JOB_QUEUE", "job_queue.svg"),
-                        ("JOB_QUEUE_D", "job_queue_d.svg"),
+                ("RENDER", "render.svg"),
+                ("RENDER_D", "render_d.svg"),
+                ("IMPORT_PICTURES", "import_pictures.svg"),
+                ("IMPORT_PICTURES_D", "import_pictures_d.svg"),
+                ("JOB_QUEUE", "job_queue.svg"),
+                ("JOB_QUEUE_D", "job_queue_d.svg"),
 
-                        ("IMAGE_ROTATION_LEFT", "image_rotation_left.svg"),
-                        ("IMAGE_ROTATION_LEFT_D", "image_rotation_left_d.svg"),
-                        ("IMAGE_ROTATION_RIGHT", "image_rotation_right.svg"),
-                        ("IMAGE_ROTATION_RIGHT_D", "image_rotation_right_d.svg"),
-                        ("IMAGE_MOVING_LEFT", "image_moving_left.svg"),
-                        ("IMAGE_MOVING_LEFT_D", "image_moving_left_d.svg"),
-                        ("IMAGE_MOVING_RIGHT", "image_moving_right.svg"),
-                        ("IMAGE_MOVING_RIGHT_D", "image_moving_right_d.svg"),
-                        ("IMAGE_REMOVE", "image_remove.svg"),
-                        ("IMAGE_REMOVE_D", "image_remove_d.svg"),
+                ("IMAGE_ROTATION_LEFT", "image_rotation_left.svg"),
+                ("IMAGE_ROTATION_LEFT_D", "image_rotation_left_d.svg"),
+                ("IMAGE_ROTATION_RIGHT", "image_rotation_right.svg"),
+                ("IMAGE_ROTATION_RIGHT_D", "image_rotation_right_d.svg"),
+                ("IMAGE_MOVING_LEFT", "image_moving_left.svg"),
+                ("IMAGE_MOVING_LEFT_D", "image_moving_left_d.svg"),
+                ("IMAGE_MOVING_RIGHT", "image_moving_right.svg"),
+                ("IMAGE_MOVING_RIGHT_D", "image_moving_right_d.svg"),
+                ("IMAGE_REMOVE", "image_remove.svg"),
+                ("IMAGE_REMOVE_D", "image_remove_d.svg"),
 
-                        ("MUSIC", "music.svg"),
-                        ("MUSIC_DURATION", "music_duration.svg"),
-                        ("PLAY", "play.svg"),
-                        ("PLAY_PAUSE", "play_pause.svg"),
-                        ("PLAY_PAUSE_d", "play_pause_d.svg"),
-                        ("ARROW_UP", "arrow_up.svg"),
-                        ("ARROW_UP_D", "arrow_up_d.svg"),
-                        ("ARROW_DOWN", "arrow_down.svg"),
-                        ("ARROW_DOWN_D", "arrow_down_d.svg"),
-                        ("REMOVE", "remove.svg"),
-                        ("REMOVE_D", "remove_d.svg"),
-                        ("VIDEO_FORMAT", "video_format.svg"),
+                ("MUSIC", "music.svg"),
+                ("MUSIC_DURATION", "music_duration.svg"),
+                ("PLAY", "play.svg"),
+                ("PLAY_PAUSE", "play_pause.svg"),
+                ("PLAY_PAUSE_d", "play_pause_d.svg"),
+                ("ARROW_UP", "arrow_up.svg"),
+                ("ARROW_UP_D", "arrow_up_d.svg"),
+                ("ARROW_DOWN", "arrow_down.svg"),
+                ("ARROW_DOWN_D", "arrow_down_d.svg"),
+                ("REMOVE", "remove.svg"),
+                ("REMOVE_D", "remove_d.svg"),
+                ("VIDEO_FORMAT", "video_format.svg"),
 
-                        ("ADD", "add.svg"),
-                        ("ALERT", "alert.svg"),
-                        ("PROPERTIES", "properties.svg"),
-                        ("EXIT", "exit.svg"),
-                        ("HELP", "help.svg"),
-                        ("ABOUT", "about.svg"),
+                ("ADD", "add.svg"),
+                ("ALERT", "alert.svg"),
+                ("PROPERTIES", "properties.svg"),
+                ("EXIT", "exit.svg"),
+                ("HELP", "help.svg"),
+                ("ABOUT", "about.svg"),
 
-                        ("FILMSTRIP", "filmstrip.png"),
-                        ("DIA", "dia.svg"),
-                        ("DIA_S", "dia_s.svg"),
-
-                       )
+                ("FILMSTRIP", "filmstrip.png"),
+                ("DIA", "dia.svg"),
+                ("DIA_S", "dia_s.svg"),
+            )
 
         for idx, (imgName, imgFile) in enumerate(imgResources):
-            file2py(os.path.join(imgDir, imgFile),
-                    target, append=idx > 0,
-                    resName=imgName)
+            file2py(
+                    os.path.join(imgDir, imgFile),
+                    target,
+                    append=idx > 0,
+                    resName=imgName
+                )
 
     def _make_locale(self):
         for filename in os.listdir("po"):
@@ -309,14 +322,17 @@ class PfsBuild(build):
                 if not os.path.exists(moDir):
                     os.makedirs(moDir)
 
-                self.spawn(MSGFMT + ["-o",
-                                     moFile,
-                                     os.path.join("po", filename)])
+                self.spawn(MSGFMT + [
+                            "-o",
+                            moFile,
+                            os.path.join("po", filename)
+                        ]
+                   )
 
                 targetPath = os.path.join("share", "locale", lang, "LC_MESSAGES")
                 self.distribution.data_files.append(
-                    (targetPath, (moFile,))
-                )
+                        (targetPath, (moFile,))
+                    )
 
 
 class PfsTest(Command):
@@ -344,15 +360,15 @@ class PfsWinPortableExe(Command):
     description = "create a portable executable dist for MS Windows (cx_freeze)"
 
     user_options = [
-        ('target-dir=', 't', 'target directory'),
-    ]
+            ('target-dir=', 't', 'target directory'),
+        ]
     sub_commands = [
             ('build', lambda x: True),
             ('build_exe', lambda x: True if BuildExe else False)
         ]
 
     def initialize_options(self):
-        self.target_dir = os.path.join("build", "dist")
+        self.target_dir = os.path.join("build", "dist_portable_win")
 
     def finalize_options(self):
         self.mkpath(self.target_dir)
@@ -364,19 +380,21 @@ class PfsWinPortableExe(Command):
         if Executable is None:
             raise Exception("missing cx_freeze.Executable")
         self.distribution.executables = [
-                 Executable(os.path.join("photofilmstrip", "GUI.py"),
-                            base="Win32GUI",
-                            target_name=Constants.APP_NAME + ".exe",
-                            icon=os.path.join("res", "icon", "photofilmstrip.ico")
-                            )
-        ]
+                Executable(
+                        os.path.join("photofilmstrip", "GUI.py"),
+                        base="Win32GUI",
+                        target_name=Constants.APP_NAME + ".exe",
+                        icon=os.path.join("res", "icon", "photofilmstrip.ico")
+                    )
+            ]
         self.distribution.executables[0]._manifest = MANIFEST_TEMPLATE.encode("utf-8")
         self.distribution.executables.append(
-                 Executable(os.path.join("photofilmstrip", "CLI.py"),
-                            target_name=Constants.APP_NAME + "-cli.exe",
-                            icon=os.path.join("res", "icon", "photofilmstrip.ico")
-                            )
-        )
+                 Executable(
+                        os.path.join("photofilmstrip", "CLI.py"),
+                        target_name=Constants.APP_NAME + "-cli.exe",
+                        icon=os.path.join("res", "icon", "photofilmstrip.ico")
+                    )
+            )
 
         # Run all sub-commands (at least those that need to be run)
         for cmdName in self.get_sub_commands():
@@ -411,8 +429,9 @@ class PfsWinPortableZip(Command):
     description = "create a ZIP file of the portable executable dist for MS Windows"
 
     user_options = []
-    sub_commands = [('bdist_win', lambda x: True),
-                   ]
+    sub_commands = [
+            ('bdist_win', lambda x: True),
+       ]
 
     def initialize_options(self):
         pass
@@ -437,10 +456,12 @@ class PfsWinPortableZip(Command):
         if not os.path.exists("release"):
             os.makedirs("release")
 
-        create_zip_file(os.path.join("dist", "photofilmstrip-{0}-{1}.zip".format(ver, bitSuffix)),
-            "build/dist",
-                        #virtualFolder="PhotoFilmStrip-%s" % ver,
-                        stripFolders=2)
+        create_zip_file(
+                os.path.join("dist", "photofilmstrip-{0}-{1}.zip".format(ver, bitSuffix)),
+                "build/dist_portable_win",
+                #virtualFolder="PhotoFilmStrip-%s" % ver,
+                stripFolders=2
+            )
         gLogger.info("    done.")
 
 
@@ -568,114 +589,127 @@ else:
             icons = []
             for icon in glob.glob(os.path.join(category, "*")):
                 icons.append(icon)
-                platform_data.append(("share/icons/hicolor/%s/%s" % \
-                                      (os.path.basename(size),
-                                       os.path.basename(category)),
-                                       icons))
+                platform_data.append(
+                        (
+                                "share/icons/hicolor/%s/%s" % \
+                                    (
+                                            os.path.basename(size),
+                                            os.path.basename(category)
+                                        ),
+                                icons
+                            )
+                    )
 
 setup(
-    cmdclass={
+        cmdclass={
                 "clean": PfsClean,
                 "sdist": PfsSdist,
                 "build": PfsBuild,
                 "bdist_win": PfsWinPortableExe,
                 "bdist_winportzip": PfsWinPortableZip,
                 "scm_info": PfsScmInfo,
-                'build_sphinx': PfsDocs,
-                'test': PfsTest,
-                "build_exe": BuildEXE,
-              },
-            "build_exe": BuildExe,
-    verbose=False,
-    options={"build_exe": {
-#                          "bundle_files":1,
-                          "optimize": 2,
-                          "include_msvcr": False,
-                          "packages": ["gi", "photofilmstrip"],
-                          "includes": ["gi",
-                                       "PIL.Image",
-                                       "PIL.BlpImagePlugin",
-                                       "PIL.BmpImagePlugin",
-                                       "PIL.BufrStubImagePlugin",
-                                       "PIL.CurImagePlugin",
-                                       "PIL.DcxImagePlugin",
-                                       "PIL.DdsImagePlugin",
-                                       "PIL.EpsImagePlugin",
-                                       "PIL.FitsImagePlugin",
-                                       "PIL.FliImagePlugin",
-                                       "PIL.FpxImagePlugin",
-                                       "PIL.FtexImagePlugin",
-                                       "PIL.GbrImagePlugin",
-                                       "PIL.GifImagePlugin",
-                                       "PIL.GribStubImagePlugin",
-                                       "PIL.Hdf5StubImagePlugin",
-                                       "PIL.IcnsImagePlugin",
-                                       "PIL.IcoImagePlugin",
-                                       "PIL.ImImagePlugin",
-                                       "PIL.ImtImagePlugin",
-                                       "PIL.IptcImagePlugin",
-                                       "PIL.JpegImagePlugin",
-                                       "PIL.Jpeg2KImagePlugin",
-                                       "PIL.McIdasImagePlugin",
-                                       "PIL.MicImagePlugin",
-                                       "PIL.MpegImagePlugin",
-                                       "PIL.MpoImagePlugin",
-                                       "PIL.MspImagePlugin",
-                                       "PIL.PalmImagePlugin",
-                                       "PIL.PcdImagePlugin",
-                                       "PIL.PcxImagePlugin",
-                                       "PIL.PdfImagePlugin",
-                                       "PIL.PixarImagePlugin",
-                                       "PIL.PngImagePlugin",
-                                       "PIL.PpmImagePlugin",
-                                       "PIL.PsdImagePlugin",
-                                       "PIL.QoiImagePlugin",
-                                       "PIL.SgiImagePlugin",
-                                       "PIL.SpiderImagePlugin",
-                                       "PIL.SunImagePlugin",
-                                       "PIL.TgaImagePlugin",
-                                       "PIL.TiffImagePlugin",
-                                       "PIL.WebPImagePlugin",
-                                       "PIL.WmfImagePlugin",
-                                       "PIL.XbmImagePlugin",
-                                       "PIL.XpmImagePlugin",
-                                       "PIL.XVThumbImagePlugin",
-                                       ],
-                          "excludes": ["Tkconstants", "tkinter", "tcl",
-                                       "PIL._imagingtk", "PIL.ImageTk",
-                                       "_ssl", "numpy"]
-                          },
-               "sdist": {"formats": ["gztar"]},
-               'build_sphinx': {"project": Constants.APP_NAME,
-                                "release": Constants.APP_VERSION_SUFFIX,
-                                "config_dir": 'docs/help',
-                                "builder": ["html"]}
-    },
-    data_files=[
+                "build_sphinx": PfsDocs,
+                "test": PfsTest,
+                "build_exe": BuildExe,
+            },
+        verbose=False,
+        options={
+                "build_exe": {
+                        #"bundle_files":1,
+                        "optimize": 2,
+                        "include_msvcr": False,
+                        "packages": ["gi", "photofilmstrip"],
+                        "includes": [
+                                "gi",
+                                "PIL.Image",
+                                "PIL.BlpImagePlugin",
+                                "PIL.BmpImagePlugin",
+                                "PIL.BufrStubImagePlugin",
+                                "PIL.CurImagePlugin",
+                                "PIL.DcxImagePlugin",
+                                "PIL.DdsImagePlugin",
+                                "PIL.EpsImagePlugin",
+                                "PIL.FitsImagePlugin",
+                                "PIL.FliImagePlugin",
+                                "PIL.FpxImagePlugin",
+                                "PIL.FtexImagePlugin",
+                                "PIL.GbrImagePlugin",
+                                "PIL.GifImagePlugin",
+                                "PIL.GribStubImagePlugin",
+                                "PIL.Hdf5StubImagePlugin",
+                                "PIL.IcnsImagePlugin",
+                                "PIL.IcoImagePlugin",
+                                "PIL.ImImagePlugin",
+                                "PIL.ImtImagePlugin",
+                                "PIL.IptcImagePlugin",
+                                "PIL.JpegImagePlugin",
+                                "PIL.Jpeg2KImagePlugin",
+                                "PIL.McIdasImagePlugin",
+                                "PIL.MicImagePlugin",
+                                "PIL.MpegImagePlugin",
+                                "PIL.MpoImagePlugin",
+                                "PIL.MspImagePlugin",
+                                "PIL.PalmImagePlugin",
+                                "PIL.PcdImagePlugin",
+                                "PIL.PcxImagePlugin",
+                                "PIL.PdfImagePlugin",
+                                "PIL.PixarImagePlugin",
+                                "PIL.PngImagePlugin",
+                                "PIL.PpmImagePlugin",
+                                "PIL.PsdImagePlugin",
+                                "PIL.QoiImagePlugin",
+                                "PIL.SgiImagePlugin",
+                                "PIL.SpiderImagePlugin",
+                                "PIL.SunImagePlugin",
+                                "PIL.TgaImagePlugin",
+                                "PIL.TiffImagePlugin",
+                                "PIL.WebPImagePlugin",
+                                "PIL.WmfImagePlugin",
+                                "PIL.XbmImagePlugin",
+                                "PIL.XpmImagePlugin",
+                                "PIL.XVThumbImagePlugin",
+                            ],
+                        "excludes": [
+                                "Tkconstants", "tkinter", "tcl",
+                                "PIL._imagingtk", "PIL.ImageTk",
+                                "_ssl", "numpy"
+                            ]
+                    },
+                "sdist": {"formats": ["gztar"]},
+                "build_sphinx": {
+                        "project": Constants.APP_NAME,
+                        "release": Constants.APP_VERSION_SUFFIX,
+                        "config_dir": "docs/help",
+                        "builder": ["html"]
+                    }
+            },
+        data_files=[
                 (os.path.join("share", "doc", "photofilmstrip"), glob.glob("docs/*.*")),
                 (os.path.join("share", "photofilmstrip", "audio"), glob.glob("data/audio/*.mp3")),
-    ] + platform_data,
-    scripts=[
-             "scripts/photofilmstrip",
-             "scripts/photofilmstrip-cli",
-    ] + platform_scripts,
+            ] + platform_data,
+        scripts=[
+                "scripts/photofilmstrip",
+                "scripts/photofilmstrip-cli",
+            ] + platform_scripts,
 
-    name=Constants.APP_NAME.lower(),
-    version=Constants.APP_VERSION_SUFFIX,
-    license="GPLv2",
-    description=Constants.APP_SLOGAN,
-    long_description=Constants.APP_DESCRIPTION,
-    author=Constants.DEVELOPERS[1],
-    author_email="technisandk@gmail.com",
-    url=Constants.APP_URL,
+        name=Constants.APP_NAME.lower(),
+        version=Constants.APP_VERSION_SUFFIX,
+        license="GPLv2",
+        description=Constants.APP_SLOGAN,
+        long_description=Constants.APP_DESCRIPTION,
+        author=Constants.DEVELOPERS[1],
+        author_email="technisandk@gmail.com",
+        url=Constants.APP_URL,
 
-    packages=['photofilmstrip',
-              'photofilmstrip.action', 'photofilmstrip.cli',
-              'photofilmstrip.core', 'photofilmstrip.core.renderer',
-              'photofilmstrip.gui', 'photofilmstrip.gui.ctrls',
-              'photofilmstrip.gui.util',
-              'photofilmstrip.lib', 'photofilmstrip.lib.common',
-              'photofilmstrip.lib.jobimpl',
-              'photofilmstrip.res',
-              'photofilmstrip.ux'],
+        packages=[
+                "photofilmstrip",
+                "photofilmstrip.action", "photofilmstrip.cli",
+                "photofilmstrip.core", "photofilmstrip.core.renderer",
+                "photofilmstrip.gui", "photofilmstrip.gui.ctrls",
+                "photofilmstrip.gui.util",
+                "photofilmstrip.lib", "photofilmstrip.lib.common",
+                "photofilmstrip.lib.jobimpl",
+                "photofilmstrip.res",
+                "photofilmstrip.ux"
+            ],
     )
