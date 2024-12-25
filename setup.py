@@ -339,9 +339,9 @@ class PfsTest(Command):
         runner.run(suite)
 
 
-class PfsExe(Command):
+class PfsWinPortableExe(Command):
 
-    description = "create an executable dist for MS Windows (py2exe)"
+    description = "create a portable executable dist for MS Windows (cx_freeze)"
 
     user_options = [
         ('target-dir=', 't', 'target directory'),
@@ -406,9 +406,9 @@ class PfsExe(Command):
                 raise Exception(f"Package '{packageName}' not found")
 
 
-class PfsWinPortable(Command):
+class PfsWinPortableZip(Command):
 
-    description = "create a portable executable for MS Windows"
+    description = "create a ZIP file of the portable executable dist for MS Windows"
 
     user_options = []
     sub_commands = [('bdist_win', lambda x: True),
@@ -578,8 +578,8 @@ setup(
                 "clean": PfsClean,
                 "sdist": PfsSdist,
                 "build": PfsBuild,
-                "bdist_win": PfsExe,
-                "bdist_winport": PfsWinPortable,
+                "bdist_win": PfsWinPortableExe,
+                "bdist_winportzip": PfsWinPortableZip,
                 "scm_info": PfsScmInfo,
                 'build_sphinx': PfsDocs,
                 'test': PfsTest,
