@@ -13,7 +13,6 @@ import unittest
 import zipfile
 import logging
 import shutil
-from sysconfig import get_path
 from typing import List
 
 from setuptools.command.build import build
@@ -27,10 +26,10 @@ except ImportError:
     Sphinx = None
 
 try:
-    from cx_Freeze.command.build_exe import BuildEXE
+    from cx_Freeze.command.build_exe import build_exe as BuildExe
     from cx_Freeze import Executable
 except ImportError:
-    BuildEXE = None
+    BuildExe = None
     Executable = None
 
 from photofilmstrip import Constants
@@ -348,9 +347,9 @@ class PfsExe(Command):
         ('target-dir=', 't', 'target directory'),
     ]
     sub_commands = [
-        ('build', lambda x: True),
-        ('build_exe', lambda x: True if BuildEXE else False)
-                   ]
+            ('build', lambda x: True),
+            ('build_exe', lambda x: True if BuildExe else False)
+        ]
 
     def initialize_options(self):
         self.target_dir = os.path.join("build", "dist")
@@ -359,9 +358,11 @@ class PfsExe(Command):
         self.mkpath(self.target_dir)
 
     def run(self):
-        build_exe = self.get_finalized_command('build_exe')
-        build_exe.build_exe = self.target_dir
+        localBuildExe = self.get_finalized_command('build_exe')
+        localBuildExe.build_exe = self.target_dir
 
+        if Executable is None:
+            raise Exception("missing cx_freeze.Executable")
         self.distribution.executables = [
                  Executable(os.path.join("photofilmstrip", "GUI.py"),
                             base="Win32GUI",
@@ -389,17 +390,20 @@ class PfsExe(Command):
             for f in filelist:
                 self.copy_file(f, targetDir)
 
-        site_packages = get_path("purelib")
-        targetDir = self.target_dir
-        dllDirGnome = os.path.join(site_packages, "gst-dist")
-        for dll in glob.glob(os.path.join(dllDirGnome, "bin", "*")):
-            self.copy_file(os.path.join(dllDirGnome, "bin", dll),
-                           os.path.join(targetDir, os.path.basename(dll)))
-
-        for subFolder in ("etc", "share", "lib"):
-            targetDir = os.path.join(self.target_dir, subFolder)
-            self.copy_tree(os.path.join(dllDirGnome, subFolder),
-                           targetDir)
+        # copy GStreamer related directories
+        msysPath = os.path.join("c:\\", "msys64", "ucrt64")
+        if not os.path.exists(msysPath):
+            raise Exception(f"MSYS2 path '{msysPath}' not found")
+        for packageName in ("gstreamer-1.0", "girepository-1.0", "gst-validate-launcher"):
+            oneFound = False
+            for subFolder in ("etc", "share", "lib"):
+                srcDir = os.path.join(msysPath, subFolder, packageName)
+                if os.path.exists(srcDir):
+                    targetDir = os.path.join(self.target_dir, subFolder, packageName)
+                    self.copy_tree(srcDir, targetDir)
+                    oneFound = True
+            if not oneFound:
+                raise Exception(f"Package '{packageName}' not found")
 
 
 class PfsWinPortable(Command):
@@ -581,6 +585,7 @@ setup(
                 'test': PfsTest,
                 "build_exe": BuildEXE,
               },
+            "build_exe": BuildExe,
     verbose=False,
     options={"build_exe": {
 #                          "bundle_files":1,
