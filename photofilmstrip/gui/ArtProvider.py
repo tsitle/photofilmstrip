@@ -9,7 +9,15 @@ import base64
 import io
 
 import wx
-import wx.svg
+try:
+    import cairosvg
+    _HAVE_CAIROSVG = True
+except ImportError:
+    _HAVE_CAIROSVG = False
+if not _HAVE_CAIROSVG:
+    from svglib.svglib import SvgRenderer
+    from reportlab.graphics import renderPM
+from PIL import Image
 
 import photofilmstrip.res.images
 
@@ -48,12 +56,74 @@ class Res2PyArtProvider(wx.ArtProvider):
 
         return wx.NullBitmap
 
-    def DataToBitmap(self, data, size):
+    @staticmethod
+    def __load_svg_from_bytes(data: bytes, resolve_entities=False):
+        from lxml import etree
+        parser = etree.XMLParser(
+                remove_comments=True,
+                recover=True,
+                resolve_entities=resolve_entities
+            )
+        import logging
+        try:
+            svgRoot = etree.fromstring(data, parser=parser)
+        except Exception as exc:
+            logging.error("Failed to load input file! (%s)", exc)
+            return None
+        else:
+            return svgRoot
+
+    @staticmethod
+    def __svg_to_wxbitmap(data: bytes, size: wx.Size):
+        """
+        Convert an SVG bytestring into a wx.Bitmap object
+        """
+        if _HAVE_CAIROSVG:
+            # convert SVG (as bytestring) into a PNG (as bytestring)
+            pngByteStr = cairosvg.svg2png(
+                    bytestring=data.decode("utf-8"),
+                    write_to=None,
+                    dpi=96,
+                    output_width=size.width,
+                    output_height=size.height
+                )
+        else:
+            # convert the SVG (as bytestring) to a ReportLab drawing
+            svgRoot = Res2PyArtProvider.__load_svg_from_bytes(data)
+            if svgRoot is None:
+                return None
+            svgRenderer = SvgRenderer("/dummy/path")
+            drawing = svgRenderer.render(svgRoot)
+            # resize the drawing
+            scaleX = size.width / drawing.width
+            scaleY = size.height / drawing.height
+            scale = min(scaleX, scaleY)  # keep aspect ratio
+            drawing.width *= scale
+            drawing.height *= scale
+            drawing.scale(scale, scale)
+            # render the drawing as a pixel map and output as PNG (as bytestring)
+            pngByteStr = renderPM.drawToString(drawing, fmt="PNG", dpi=96)
+        # convert the PNG bytestring into a Pillow image
+        pngImage = Image.open(io.BytesIO(pngByteStr))
+        # ensure the image is in RGB mode
+        if pngImage.mode != "RGBA":
+            pngImage = pngImage.convert("RGBA")
+        # convert the Pillow image to raw data
+        imgDataRgb = pngImage.tobytes("raw", "RGB")
+        imgDataAlpha = pngImage.tobytes("raw", "A")
+        # create a wx.Image from the raw data
+        wxImage = wx.Image(pngImage.width, pngImage.height)
+        wxImage.SetData(imgDataRgb)
+        wxImage.SetAlpha(imgDataAlpha)
+        wxImage.Rescale(size.width, size.height, wx.IMAGE_QUALITY_HIGH)
+        # convert wx.Image to wx.Bitmap
+        return wxImage.ConvertToBitmap()
+
+    def DataToBitmap(self, data, size: wx.Size):
         data = base64.b64decode(data)
         if data.startswith(b"<?xml") or data.startswith(b"<svg"):
-            svgImg = wx.svg.SVGimage.CreateFromBytes(data, units='px', dpi=96)
-            bmp = svgImg.ConvertToScaledBitmap(size)
-            if bmp.IsOk():
+            bmp = self.__svg_to_wxbitmap(data, size)
+            if bmp and bmp.IsOk():
                 return bmp
             else:
                 return wx.NullBitmap
@@ -64,4 +134,3 @@ class Res2PyArtProvider(wx.ArtProvider):
                 return wx.Bitmap(wxImg)
             else:
                 return wx.NullBitmap
-

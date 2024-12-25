@@ -2,3 +2,8 @@ pillow
 wxPython
 PyGObject
 setuptools
+cairosvg
+# alternative to cairosvg:
+#svglib
+#reportlab
+#rlpycairo
