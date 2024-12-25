@@ -1,3 +1,2 @@
-cx_freeze==6.15.12 ; platform_system == "Windows"
 sphinx
 pylint
