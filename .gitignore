@@ -1,13 +1,10 @@
 /venv-*
 /x-*.sh
-/x-Makefile
-/x-requirements.txt
 /.msys*/
 
 /.idea
 
 /photofilmstrip.egg-info/
-/docs/help/_build/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -21,7 +18,6 @@ sdist/
 var/
 locale/
 Tools/
-release/
 _scmInfo.py
 
 .settings
