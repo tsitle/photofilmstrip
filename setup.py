@@ -46,6 +46,14 @@ if os.path.isfile(MSGFMT):
 else:
     MSGFMT = ["msgfmt"]
 
+tmpIs64Bit = (sys.maxsize > 2 ** 32)
+if tmpIs64Bit:
+    WIN_BIT_SUFFIX = "win64"
+else:
+    WIN_BIT_SUFFIX = "win32"
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 class PfsClean(Command):
     sub_commands = []
@@ -132,6 +140,15 @@ class PfsSdist(sdist):
             ('scm_info', lambda x: True),
             ('build', lambda x: True),
         ] + sdist.sub_commands
+
+    def run(self):
+        outputFn1 = os.path.join("dist", f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}.tar.gz")
+        gLogger.info(f"Building source distribution TAR ball '{outputFn1}'...")
+        sdist.run(self)
+        #
+        outputFn2 = os.path.join("dist", f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-source.tar.gz")
+        gLogger.info(f"Renaming source distribution TAR ball to '{outputFn2}'")
+        os.rename(outputFn1, outputFn2)
 
 
 class PfsDocs(Command):
@@ -368,7 +385,11 @@ class PfsWinPortableExe(Command):
         ]
 
     def initialize_options(self):
-        self.target_dir = os.path.join("build", "dist_portable_win")
+        self.target_dir = os.path.join(
+                "build",
+                "dist_portable_win",
+                f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-{WIN_BIT_SUFFIX}"
+            )
 
     def finalize_options(self):
         self.mkpath(self.target_dir)
@@ -423,6 +444,9 @@ class PfsWinPortableExe(Command):
             if not oneFound:
                 raise Exception(f"Package '{packageName}' not found")
 
+        #
+        gLogger.info(f"Built portable executable at '{self.target_dir}'")
+
 
 class PfsWinPortableZip(Command):
 
@@ -444,25 +468,15 @@ class PfsWinPortableZip(Command):
         for cmdName in self.get_sub_commands():
             self.run_command(cmdName)
 
-        ver = Constants.APP_VERSION_SUFFIX
-
-        is64Bit = sys.maxsize > 2 ** 32
-        if is64Bit:
-            bitSuffix = "win64"
-        else:
-            bitSuffix = "win32"
-
-        gLogger.info("building portable zip...")
-        if not os.path.exists("release"):
-            os.makedirs("release")
-
+        outputFn = os.path.join("dist", f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-{WIN_BIT_SUFFIX}.zip")
+        gLogger.info(f"Building portable zip '{outputFn}'...")
         create_zip_file(
-                os.path.join("dist", "photofilmstrip-{0}-{1}.zip".format(ver, bitSuffix)),
+                outputFn,
                 "build/dist_portable_win",
                 #virtualFolder="PhotoFilmStrip-%s" % ver,
                 stripFolders=2
             )
-        gLogger.info("    done.")
+        gLogger.info(f"Built portable zip '{outputFn}'")
 
 
 def create_zip_file(zipFile: str, srcDir: str, stripFolders: int=0, virtualFolder: str=None):
@@ -551,6 +565,8 @@ def file2py(source, python_file, append, resName):
 
     gLogger.info("Embedded %s using %s into %s" % (source, resName, python_file))
 
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
