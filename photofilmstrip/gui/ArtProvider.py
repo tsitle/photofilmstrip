@@ -14,9 +14,15 @@ try:
     _HAVE_CAIROSVG = True
 except ImportError:
     _HAVE_CAIROSVG = False
+_HAVE_SVGLIB = False
 if not _HAVE_CAIROSVG:
-    from svglib.svglib import SvgRenderer
-    from reportlab.graphics import renderPM
+    try:
+        from svglib.svglib import SvgRenderer
+        from reportlab.graphics import renderPM
+        _HAVE_SVGLIB = True
+    except ImportError:
+        SvgRenderer = None
+        renderPM = None
 from PIL import Image
 
 import photofilmstrip.res.images
@@ -58,7 +64,12 @@ class Res2PyArtProvider(wx.ArtProvider):
 
     @staticmethod
     def __load_svg_from_bytes(data: bytes, resolve_entities=False):
-        from lxml import etree
+        if not _HAVE_SVGLIB:
+            return None
+        try:
+            from lxml import etree
+        except ImportError:
+            return None
         parser = etree.XMLParser(
                 remove_comments=True,
                 recover=True,
@@ -87,12 +98,12 @@ class Res2PyArtProvider(wx.ArtProvider):
                     output_width=size.width,
                     output_height=size.height
                 )
-        else:
+        elif _HAVE_SVGLIB:
             # convert the SVG (as bytestring) to a ReportLab drawing
             svgRoot = Res2PyArtProvider.__load_svg_from_bytes(data)
             if svgRoot is None:
                 return None
-            svgRenderer = SvgRenderer("/dummy/path")
+            svgRenderer = SvgRenderer("/dummy/path")  # pylint: disable=possibly-used-before-assignment
             drawing = svgRenderer.render(svgRoot)
             # resize the drawing
             scaleX = size.width / drawing.width
@@ -102,7 +113,9 @@ class Res2PyArtProvider(wx.ArtProvider):
             drawing.height *= scale
             drawing.scale(scale, scale)
             # render the drawing as a pixel map and output as PNG (as bytestring)
-            pngByteStr = renderPM.drawToString(drawing, fmt="PNG", dpi=96)
+            pngByteStr = renderPM.drawToString(drawing, fmt="PNG", dpi=96)  # pylint: disable=possibly-used-before-assignment
+        else:
+            return None
         # convert the PNG bytestring into a Pillow image
         pngImage = Image.open(io.BytesIO(pngByteStr))
         # ensure the image is in RGB mode
