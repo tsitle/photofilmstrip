@@ -29,6 +29,7 @@ class ActionI18N(IAction):
 
         localeDir = None
         for tmpLocaleDir in (
+                    os.path.join("share", "locale"),
                     os.path.join(Constants.APP_DIR, "share", "locale"),
                     os.path.join(Constants.APP_DIR, "locale"),
                     os.path.join(Constants.APP_DIR, "mo")
