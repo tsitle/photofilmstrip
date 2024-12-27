@@ -1,6 +1,8 @@
 /venv-*
 /x-*.sh
+/x-*.bat
 /.msys*/
+/release-tmp/
 
 /.idea
 
