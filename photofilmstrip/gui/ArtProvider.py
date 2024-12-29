@@ -9,6 +9,7 @@ import base64
 import io
 
 import wx
+
 try:
     import cairosvg
     _HAVE_CAIROSVG = True
