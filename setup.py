@@ -7,13 +7,14 @@
 
 import base64
 import glob
+import stat
 import sys
 import os
 import unittest
 import zipfile
 import logging
 import shutil
-from typing import List
+from typing import List, Tuple
 
 from setuptools.command.build import build
 from setuptools.command.sdist import sdist
@@ -135,6 +136,8 @@ class PfsScmInfo(Command):
 
 
 class PfsSdist(sdist):
+
+    description = "create a distribution TAR ball of the source code"
 
     sub_commands = [
             ('scm_info', lambda x: True),
@@ -374,7 +377,7 @@ class PfsTest(Command):
 
 class PfsWinPortableExe(Command):
 
-    description = "create a portable executable dist for MS Windows (cx_freeze)"
+    description = "create a portable executable for MS Windows (cx_freeze)"
 
     user_options = [
             ('target-dir=', 't', 'target directory'),
@@ -388,7 +391,7 @@ class PfsWinPortableExe(Command):
         self.target_dir = os.path.join(
                 "build",
                 "dist_portable_win",
-                f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-{WIN_BIT_SUFFIX}"
+                f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-portable_{WIN_BIT_SUFFIX}"
             )
 
     def finalize_options(self):
@@ -397,7 +400,7 @@ class PfsWinPortableExe(Command):
     def run(self):
         localBuildExe = self.get_finalized_command('build_exe')
         localBuildExe.build_exe = self.target_dir
-
+        #
         if Executable is None:
             raise Exception("missing cx_freeze.Executable")
         self.distribution.executables = [
@@ -416,41 +419,23 @@ class PfsWinPortableExe(Command):
                         icon=os.path.join("res", "icon", "photofilmstrip.ico")
                     )
             )
-
         # Run all sub-commands (at least those that need to be run)
         for cmdName in self.get_sub_commands():
             self.run_command(cmdName)
-
+        # copy data files
         for targetDir, filelist in self.distribution.data_files:
             targetDir = os.path.join(self.target_dir, targetDir)
             if not os.path.exists(targetDir):
                 os.makedirs(targetDir)
-
             for f in filelist:
                 self.copy_file(f, targetDir)
-
-        # copy GStreamer related directories
-        msysPath = os.path.join("c:\\", "msys64", "ucrt64")
-        if not os.path.exists(msysPath):
-            raise Exception(f"MSYS2 path '{msysPath}' not found")
-        for packageName in ("gstreamer-1.0", "girepository-1.0", "gst-validate-launcher"):
-            oneFound = False
-            for subFolder in ("etc", "share", "lib"):
-                srcDir = os.path.join(msysPath, subFolder, packageName)
-                if os.path.exists(srcDir):
-                    targetDir = os.path.join(self.target_dir, subFolder, packageName)
-                    self.copy_tree(srcDir, targetDir)
-                    oneFound = True
-            if not oneFound:
-                raise Exception(f"Package '{packageName}' not found")
-
         #
         gLogger.info(f"Built portable executable at '{self.target_dir}'")
 
 
 class PfsWinPortableZip(Command):
 
-    description = "create a ZIP file of the portable executable dist for MS Windows"
+    description = "create a distribution ZIP file of the portable executable for MS Windows"
 
     user_options = []
     sub_commands = [
@@ -467,8 +452,8 @@ class PfsWinPortableZip(Command):
         # Run all sub-commands (at least those that need to be run)
         for cmdName in self.get_sub_commands():
             self.run_command(cmdName)
-
-        outputFn = os.path.join("dist", f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-{WIN_BIT_SUFFIX}.zip")
+        #
+        outputFn = os.path.join("dist", f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-portable_{WIN_BIT_SUFFIX}.zip")
         gLogger.info(f"Building portable zip '{outputFn}'...")
         create_zip_file(
                 outputFn,
@@ -478,6 +463,128 @@ class PfsWinPortableZip(Command):
             )
         gLogger.info(f"Built portable zip '{outputFn}'")
 
+
+class PfsInterpreterPortableZip(Command):
+
+    description = "create a distribution ZIP file of the compiled portable Python code for Linux and MS Windows"
+
+    user_options = [
+            ("target-dir=", "t", "target directory"),
+        ]
+    sub_commands = [
+            ("build", lambda x: True),
+        ]
+
+    def initialize_options(self):
+        self.target_dir = os.path.join(
+                "build",
+                "dist_portable_interpreter",
+                f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-portable_generic"
+            )
+
+    def finalize_options(self):
+        self.mkpath(self.target_dir)
+
+    def run(self):
+        # run all sub-commands
+        for cmdName in self.get_sub_commands():
+            self.run_command(cmdName)
+        # copy all data files (HTML docs, audio files, *.desktop, app icons, locale files and pixmaps) to 'build/.../share/'
+        for dfTargetDir, dfFilelist in self.distribution.data_files:
+            tmpBuildDfTargetDir = os.path.join(self.target_dir, dfTargetDir)
+            if not os.path.exists(tmpBuildDfTargetDir):
+                os.makedirs(tmpBuildDfTargetDir)
+            for f in dfFilelist:
+                self.copy_file(f, tmpBuildDfTargetDir)
+        # copy files from root directory
+        otherFiles = [
+                "COPYING",
+                "LICENSE",
+                "README.md",
+                "requirements.txt",
+                "y-installo.sh",
+                "y-venvo.sh"
+            ]
+        for f in otherFiles:
+            self.copy_file(f, self.target_dir)
+        # copy source code directory
+        tmpBuildSourceDir = os.path.join("build", "lib", "photofilmstrip")
+        tmpBuildTargetDir = os.path.join(self.target_dir, "app", "photofilmstrip")
+        self.copy_tree(tmpBuildSourceDir, tmpBuildTargetDir)
+        # generate scripts
+        with open(os.path.join(self.target_dir, "run.bat"), "w") as tmpScript:
+            tmpScript.write("@echo off\r\n")
+            tmpScript.write("\r\n")
+            tmpScript.write("REM\r\n")
+            tmpScript.write("REM by TS, Dec 2024\r\n")
+            tmpScript.write("REM\r\n")
+            tmpScript.write("\r\n")
+            tmpScript.write("set VENV_PATH=venv-win\r\n")
+            tmpScript.write("\r\n")
+            tmpScript.write("if exist \"%VENV_PATH%\" goto runHaveVenv\r\n")
+            tmpScript.write("echo Missing Python VENV in '%VENV_PATH%'.\r\n")
+            tmpScript.write("echo Executing '$ ./y-venvo.sh' in UCRT64 Terminal...\r\n")
+            tmpScript.write("cd \"%~dp0\"\r\n")
+            tmpScript.write("C:\\msys64\\ucrt64.exe \"./y-venvo.sh\"\r\n")
+            tmpScript.write("echo Once the Python VENV has been created you can execute this script again\r\n")
+            tmpScript.write("pause\r\n")
+            tmpScript.write("goto runEnd\r\n")
+            tmpScript.write("\r\n")
+            tmpScript.write(":runHaveVenv\r\n")
+            tmpScript.write("\r\n")
+            tmpScript.write("cd app\r\n")
+            tmpScript.write("\"..\\%VENV_PATH%\\bin\\python3.exe\" -c \"from photofilmstrip.GUI import main; main()\"\r\n")
+            tmpScript.write("cd ..\r\n")
+            tmpScript.write("\r\n")
+            tmpScript.write(":runEnd\r\n")
+        with open(os.path.join(self.target_dir, "run.sh"), "w") as tmpScript:
+            tmpScript.write("#!/usr/bin/env bash\n")
+            tmpScript.write("\n")
+            tmpScript.write("#\n")
+            tmpScript.write("# by TS, Dec 2024\n")
+            tmpScript.write("#\n")
+            tmpScript.write("\n")
+            tmpScript.write("VAR_MYNAME=\"$(basename \"$0\")\"\n")
+            tmpScript.write("VAR_MYDIR=\"$(dirname \"$0\")\"\n")
+            tmpScript.write("\n")
+            tmpScript.write("case \"${OSTYPE}\" in\n")
+            tmpScript.write("\tlinux*)\n")
+            tmpScript.write("\t\tVENV_PATH=\"venv-lx\"\n")
+            tmpScript.write("\t\t;;\n")
+            tmpScript.write("\tdarwin*)\n")
+            tmpScript.write("\t\tVENV_PATH=\"venv-mac\"\n")
+            tmpScript.write("\t\t;;\n")
+            tmpScript.write("\tmsys*)\n")
+            tmpScript.write("\t\tVENV_PATH=\"venv-win\"\n")
+            tmpScript.write("\t\t;;\n")
+            tmpScript.write("\t*)\n")
+            tmpScript.write("\t\techo \"${VAR_MYNAME}: Error: Unknown OSTYPE '${OSTYPE}'\" >>/dev/stderr\n")
+            tmpScript.write("\t\texit 1\n")
+            tmpScript.write("\t\t;;\n")
+            tmpScript.write("esac\n")
+            tmpScript.write("\n")
+            tmpScript.write("cd \"${VAR_MYDIR}\" || exit 1\n")
+            tmpScript.write("\n")
+            tmpScript.write("\"./y-venvo.sh\" || {\n")
+            tmpScript.write("\techo \"${VAR_MYNAME}: Error: y-venvo failed\" >>/dev/stderr\n")
+            tmpScript.write("\texit 1\n")
+            tmpScript.write("}\n")
+            tmpScript.write("\n")
+            tmpScript.write("echo \"${VAR_MYNAME}: Invoking PFS\" >>/dev/stderr\n")
+            tmpScript.write("cd app || exit 1\n")
+            tmpScript.write("\"../${VENV_PATH}/bin/python3\" -c \"from photofilmstrip.GUI import main; main()\"\n")
+        # change file perms of bash scripts
+        for tmpFn in ["run.sh", "y-installo.sh", "y-venvo.sh"]:
+            tmpScriptPath = os.path.join(self.target_dir, tmpFn)
+            os.chmod(tmpScriptPath, stat.S_IRUSR | stat.S_IWUSR  | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+        # create ZIP file
+        outputFn = os.path.join("dist", f"photofilmstrip-{Constants.APP_VERSION_SUFFIX}-portable_generic.zip")
+        gLogger.info(f"Building portable zip '{outputFn}'...")
+        create_zip_file(outputFn, self.target_dir, stripFolders=2)
+        gLogger.info(f"Built portable zip '{outputFn}'")
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 def create_zip_file(zipFile: str, srcDir: str, stripFolders: int=0, virtualFolder: str=None):
     gLogger.info("zip %s to %s" % (srcDir, zipFile))
@@ -501,7 +608,6 @@ def create_zip_file(zipFile: str, srcDir: str, stripFolders: int=0, virtualFolde
             gLogger.info("  deflate %s" % zipTarget)
             zf.write(os.path.join(dirpath, fname), zipTarget)
     zf.close()
-
 
 def unzip_file(zipFile: str, targetDir: str, stripFolders: int=0):
     gLogger.info("unzip %s to %s" % (zipFile, targetDir))
@@ -535,7 +641,6 @@ def unzip_file(zipFile: str, targetDir: str, stripFolders: int=0):
         fd.write(data)
         fd.close()
 
-
 def file2py(source, python_file, append, resName):
     lines = []
     with open(source, "rb") as fid:
@@ -565,6 +670,58 @@ def file2py(source, python_file, append, resName):
 
     gLogger.info("Embedded %s using %s into %s" % (source, resName, python_file))
 
+def __get_platform_scripts() -> List[str]:
+    resArr = []
+    if os.name != "nt":
+        return resArr
+    resArr.append(os.path.join("windows", "photofilmstrip.bat"))
+    resArr.append(os.path.join("windows", "photofilmstrip-cli.bat"))
+    return resArr
+
+def __get_platform_data() -> List[Tuple[str, List[str]]]:
+    resArr = []
+    if os.name == "nt":
+        return resArr
+    resArr.append(("share/applications", ["data/photofilmstrip.desktop"]))
+    resArr.append(("share/pixmaps", ["data/photofilmstrip.xpm"]))
+
+    for size in glob.glob(os.path.join("data/icons", "*")):
+        for category in glob.glob(os.path.join(size, "*")):
+            icons = []
+            for icon in glob.glob(os.path.join(category, "*")):
+                icons.append(icon)
+            resArr.append(
+                    (
+                            "share/icons/hicolor/%s/%s" % \
+                            (
+                                    os.path.basename(size),
+                                    os.path.basename(category)
+                                ),
+                            icons
+                        )
+                )
+    return resArr
+
+def __get_gstreamer_folders() -> List[Tuple[str, str]]:
+    resArr = []
+    if os.name != "nt":
+        return resArr
+    # add GStreamer related libraries
+    msysPath = os.path.join("c:\\", "msys64", "ucrt64")
+    if not os.path.exists(msysPath):
+        raise Exception(f"MSYS2 path '{msysPath}' not found")
+    for packageName in ("gstreamer-1.0", "girepository-1.0", "gst-validate-launcher"):
+        oneFound = False
+        for subFolder in ("etc", "share", "lib"):
+            tmpSubFolderPathRel = os.path.join(subFolder, packageName)
+            tmpSubFolderPathAbs = os.path.join(msysPath, tmpSubFolderPathRel)
+            if os.path.exists(tmpSubFolderPathAbs):
+                resArr.append((tmpSubFolderPathAbs, tmpSubFolderPathRel))
+                oneFound = True
+        if not oneFound:
+            raise Exception(f"Package '{packageName}' not found")
+    return resArr
+
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -591,31 +748,6 @@ MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 gLogger = logging.getLogger(__name__)
 logging.basicConfig(format="%(levelname)s:%(message)s", encoding="utf-8", level=logging.WARNING)
 
-platform_scripts = []
-platform_data = []
-if os.name == "nt":
-    platform_scripts.append(os.path.join("windows", "photofilmstrip.bat"))
-    platform_scripts.append(os.path.join("windows", "photofilmstrip-cli.bat"))
-else:
-    platform_data.append(("share/applications", ["data/photofilmstrip.desktop"]))
-    platform_data.append(("share/pixmaps", ["data/photofilmstrip.xpm"]))
-
-    for size in glob.glob(os.path.join("data/icons", "*")):
-        for category in glob.glob(os.path.join(size, "*")):
-            icons = []
-            for icon in glob.glob(os.path.join(category, "*")):
-                icons.append(icon)
-                platform_data.append(
-                        (
-                                "share/icons/hicolor/%s/%s" % \
-                                    (
-                                            os.path.basename(size),
-                                            os.path.basename(category)
-                                        ),
-                                icons
-                            )
-                    )
-
 setup(
         cmdclass={
                 "clean": PfsClean,
@@ -623,6 +755,7 @@ setup(
                 "build": PfsBuild,
                 "bdist_win": PfsWinPortableExe,
                 "bdist_winportzip": PfsWinPortableZip,
+                "sdist_interpreterportzip": PfsInterpreterPortableZip,
                 "scm_info": PfsScmInfo,
                 "build_sphinx": PfsDocs,
                 "test": PfsTest,
@@ -685,6 +818,7 @@ setup(
                                 "PIL.XpmImagePlugin",
                                 "PIL.XVThumbImagePlugin",
                             ],
+                        "include_files": __get_gstreamer_folders(),
                         "excludes": [
                                 "Tkconstants", "tkinter", "tcl",
                                 "PIL._imagingtk", "PIL.ImageTk",
@@ -702,11 +836,11 @@ setup(
         data_files=[
                 (os.path.join("share", "doc", "photofilmstrip"), glob.glob("docs/*.*")),
                 (os.path.join("share", "photofilmstrip", "audio"), glob.glob("data/audio/*.mp3")),
-            ] + platform_data,
+            ] + __get_platform_data(),
         scripts=[
                 "scripts/photofilmstrip",
                 "scripts/photofilmstrip-cli",
-            ] + platform_scripts,
+            ] + __get_platform_scripts(),
 
         name=Constants.APP_NAME.lower(),
         version=Constants.APP_VERSION_SUFFIX,

@@ -3,6 +3,7 @@ wxPython
 PyGObject
 setuptools
 cairosvg
+cairocffi
 # alternative to cairosvg:
 #svglib
 #reportlab
