@@ -14,7 +14,7 @@ import unittest
 import zipfile
 import logging
 import shutil
-from typing import List, Tuple
+from typing import List, Tuple, Final
 
 from setuptools.command.build import build
 from setuptools.command.sdist import sdist
@@ -512,69 +512,12 @@ class PfsInterpreterPortableZip(Command):
         tmpBuildTargetDir = os.path.join(self.target_dir, "app", "photofilmstrip")
         self.copy_tree(tmpBuildSourceDir, tmpBuildTargetDir)
         # generate scripts
-        with open(os.path.join(self.target_dir, "run.bat"), "w") as tmpScript:
-            tmpScript.write("@echo off\r\n")
-            tmpScript.write("\r\n")
-            tmpScript.write("REM\r\n")
-            tmpScript.write("REM by TS, Dec 2024\r\n")
-            tmpScript.write("REM\r\n")
-            tmpScript.write("\r\n")
-            tmpScript.write("set VENV_PATH=venv-win\r\n")
-            tmpScript.write("\r\n")
-            tmpScript.write("if exist \"%VENV_PATH%\" goto runHaveVenv\r\n")
-            tmpScript.write("echo Missing Python VENV in '%VENV_PATH%'.\r\n")
-            tmpScript.write("echo Executing '$ ./y-venvo.sh' in UCRT64 Terminal...\r\n")
-            tmpScript.write("cd \"%~dp0\"\r\n")
-            tmpScript.write("C:\\msys64\\ucrt64.exe \"./y-venvo.sh\"\r\n")
-            tmpScript.write("echo Once the Python VENV has been created you can execute this script again\r\n")
-            tmpScript.write("pause\r\n")
-            tmpScript.write("goto runEnd\r\n")
-            tmpScript.write("\r\n")
-            tmpScript.write(":runHaveVenv\r\n")
-            tmpScript.write("\r\n")
-            tmpScript.write("cd app\r\n")
-            tmpScript.write("\"..\\%VENV_PATH%\\bin\\python3.exe\" -c \"from photofilmstrip.GUI import main; main()\"\r\n")
-            tmpScript.write("cd ..\r\n")
-            tmpScript.write("\r\n")
-            tmpScript.write(":runEnd\r\n")
-        with open(os.path.join(self.target_dir, "run.sh"), "w") as tmpScript:
-            tmpScript.write("#!/usr/bin/env bash\n")
-            tmpScript.write("\n")
-            tmpScript.write("#\n")
-            tmpScript.write("# by TS, Dec 2024\n")
-            tmpScript.write("#\n")
-            tmpScript.write("\n")
-            tmpScript.write("VAR_MYNAME=\"$(basename \"$0\")\"\n")
-            tmpScript.write("VAR_MYDIR=\"$(dirname \"$0\")\"\n")
-            tmpScript.write("\n")
-            tmpScript.write("case \"${OSTYPE}\" in\n")
-            tmpScript.write("\tlinux*)\n")
-            tmpScript.write("\t\tVENV_PATH=\"venv-lx\"\n")
-            tmpScript.write("\t\t;;\n")
-            tmpScript.write("\tdarwin*)\n")
-            tmpScript.write("\t\tVENV_PATH=\"venv-mac\"\n")
-            tmpScript.write("\t\t;;\n")
-            tmpScript.write("\tmsys*)\n")
-            tmpScript.write("\t\tVENV_PATH=\"venv-win\"\n")
-            tmpScript.write("\t\t;;\n")
-            tmpScript.write("\t*)\n")
-            tmpScript.write("\t\techo \"${VAR_MYNAME}: Error: Unknown OSTYPE '${OSTYPE}'\" >>/dev/stderr\n")
-            tmpScript.write("\t\texit 1\n")
-            tmpScript.write("\t\t;;\n")
-            tmpScript.write("esac\n")
-            tmpScript.write("\n")
-            tmpScript.write("cd \"${VAR_MYDIR}\" || exit 1\n")
-            tmpScript.write("\n")
-            tmpScript.write("\"./y-venvo.sh\" || {\n")
-            tmpScript.write("\techo \"${VAR_MYNAME}: Error: y-venvo failed\" >>/dev/stderr\n")
-            tmpScript.write("\texit 1\n")
-            tmpScript.write("}\n")
-            tmpScript.write("\n")
-            tmpScript.write("echo \"${VAR_MYNAME}: Invoking PFS\" >>/dev/stderr\n")
-            tmpScript.write("cd app || exit 1\n")
-            tmpScript.write("\"../${VENV_PATH}/bin/python3\" -c \"from photofilmstrip.GUI import main; main()\"\n")
+        self.__write_run_bat(isCli=False)
+        self.__write_run_bat(isCli=True)
+        self.__write_run_sh(isCli=False)
+        self.__write_run_sh(isCli=True)
         # change file perms of bash scripts
-        for tmpFn in ["run.sh", "y-installo.sh", "y-venvo.sh"]:
+        for tmpFn in ["run-gui.sh", "run-cli.sh", "y-installo.sh", "y-venvo.sh"]:
             tmpScriptPath = os.path.join(self.target_dir, tmpFn)
             os.chmod(tmpScriptPath, stat.S_IRUSR | stat.S_IWUSR  | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
         # create ZIP file
@@ -582,6 +525,74 @@ class PfsInterpreterPortableZip(Command):
         gLogger.info(f"Building portable zip '{outputFn}'...")
         create_zip_file(outputFn, self.target_dir, stripFolders=2)
         gLogger.info(f"Built portable zip '{outputFn}'")
+
+    def __write_run_bat(self, isCli: bool):
+        with open(os.path.join(self.target_dir, f"run-{"cli" if isCli else "gui"}.bat"), "w") as tmpScript:
+            _LINEEND: Final = "\r\n"
+            tmpScript.write("@echo off" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("REM" + _LINEEND)
+            tmpScript.write("REM by TS, Dec 2024" + _LINEEND)
+            tmpScript.write("REM" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("set VENV_PATH=venv-win" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("if exist \"%VENV_PATH%\" goto runHaveVenv" + _LINEEND)
+            tmpScript.write("echo Missing Python VENV in '%VENV_PATH%'." + _LINEEND)
+            tmpScript.write("echo Executing '$ ./y-venvo.sh' in UCRT64 Terminal..." + _LINEEND)
+            tmpScript.write("cd \"%~dp0\"" + _LINEEND)
+            tmpScript.write("C:\\msys64\\ucrt64.exe \"./y-venvo.sh\"" + _LINEEND)
+            tmpScript.write("echo Once the Python VENV has been created you can execute this script again" + _LINEEND)
+            tmpScript.write("pause" + _LINEEND)
+            tmpScript.write("goto runEnd" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write(":runHaveVenv" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("echo Invoking PFS-" + ("CLI" if isCli else "GUI") + _LINEEND)
+            tmpScript.write("cd app" + _LINEEND)
+            tmpScript.write("\"..\\%VENV_PATH%\\bin\\python3.exe\" -c \"from photofilmstrip." + ("CLI" if isCli else "GUI") + " import main; main()\" %*" + _LINEEND)
+            tmpScript.write("cd .." + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write(":runEnd" + _LINEEND)
+
+    def __write_run_sh(self, isCli: bool):
+        with open(os.path.join(self.target_dir, f"run-{"cli" if isCli else "gui"}.sh"), "w") as tmpScript:
+            _LINEEND: Final = "\n"
+            tmpScript.write("#!/usr/bin/env bash" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("#" + _LINEEND)
+            tmpScript.write("# by TS, Dec 2024" + _LINEEND)
+            tmpScript.write("#" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("VAR_MYNAME=\"$(basename \"$0\")\"" + _LINEEND)
+            tmpScript.write("VAR_MYDIR=\"$(dirname \"$0\")\"" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("case \"${OSTYPE}\" in" + _LINEEND)
+            tmpScript.write("\tlinux*)" + _LINEEND)
+            tmpScript.write("\t\tVENV_PATH=\"venv-lx\"" + _LINEEND)
+            tmpScript.write("\t\t;;" + _LINEEND)
+            tmpScript.write("\tdarwin*)" + _LINEEND)
+            tmpScript.write("\t\tVENV_PATH=\"venv-mac\"" + _LINEEND)
+            tmpScript.write("\t\t;;" + _LINEEND)
+            tmpScript.write("\tmsys*)" + _LINEEND)
+            tmpScript.write("\t\tVENV_PATH=\"venv-win\"" + _LINEEND)
+            tmpScript.write("\t\t;;" + _LINEEND)
+            tmpScript.write("\t*)" + _LINEEND)
+            tmpScript.write("\t\techo \"${VAR_MYNAME}: Error: Unknown OSTYPE '${OSTYPE}'\" >>/dev/stderr" + _LINEEND)
+            tmpScript.write("\t\texit 1" + _LINEEND)
+            tmpScript.write("\t\t;;" + _LINEEND)
+            tmpScript.write("esac" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("cd \"${VAR_MYDIR}\" || exit 1" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("\"./y-venvo.sh\" || {" + _LINEEND)
+            tmpScript.write("\techo \"${VAR_MYNAME}: Error: y-venvo failed\" >>/dev/stderr" + _LINEEND)
+            tmpScript.write("\texit 1" + _LINEEND)
+            tmpScript.write("}" + _LINEEND)
+            tmpScript.write(_LINEEND)
+            tmpScript.write("echo \"${VAR_MYNAME}: Invoking PFS-" + ("CLI" if isCli else "GUI") + "\" >>/dev/stderr" + _LINEEND)
+            tmpScript.write("cd app || exit 1" + _LINEEND)
+            tmpScript.write("\"../${VENV_PATH}/bin/python3\" -c \"from photofilmstrip." + ("CLI" if isCli else "GUI") + " import main; main()\" $@" + _LINEEND)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -671,11 +682,12 @@ def file2py(source, python_file, append, resName):
     gLogger.info("Embedded %s using %s into %s" % (source, resName, python_file))
 
 def __get_platform_scripts() -> List[str]:
-    resArr = []
-    if os.name != "nt":
-        return resArr
-    resArr.append(os.path.join("windows", "photofilmstrip.bat"))
-    resArr.append(os.path.join("windows", "photofilmstrip-cli.bat"))
+    resArr = [
+            os.path.join("scripts", "photofilmstrip.py"),
+            os.path.join("scripts", "photofilmstrip-cli.py"),
+            os.path.join("windows", "photofilmstrip.bat"),
+            os.path.join("windows", "photofilmstrip-cli.bat")
+        ]
     return resArr
 
 def __get_platform_data() -> List[Tuple[str, List[str]]]:
@@ -837,10 +849,7 @@ setup(
                 (os.path.join("share", "doc", "photofilmstrip"), glob.glob("docs/*.*")),
                 (os.path.join("share", "photofilmstrip", "audio"), glob.glob("data/audio/*.mp3")),
             ] + __get_platform_data(),
-        scripts=[
-                "scripts/photofilmstrip",
-                "scripts/photofilmstrip-cli",
-            ] + __get_platform_scripts(),
+        scripts=__get_platform_scripts(),
 
         name=Constants.APP_NAME.lower(),
         version=Constants.APP_VERSION_SUFFIX,

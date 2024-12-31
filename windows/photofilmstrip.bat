@@ -1,1 +1,1 @@
-@"%~dp0..\python" "%~dp0photofilmstrip" %*
+@"%~dp0..\venv-win\bin\python3" "%~dp0photofilmstrip" %*
