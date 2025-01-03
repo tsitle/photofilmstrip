@@ -107,8 +107,8 @@ case "${OSTYPE}" in
 		;;
 esac
 
-if [ -f "./y-installo_dev.sh" ]; then
-	./y-installo_dev.sh || exit 1
+if [ -f "./y-install_depso_dev.sh" ]; then
+	./y-install_depso_dev.sh || exit 1
 fi
 
 exit 0

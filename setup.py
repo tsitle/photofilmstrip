@@ -502,7 +502,7 @@ class PfsInterpreterPortableZip(Command):
                 "LICENSE",
                 "README.md",
                 "requirements.txt",
-                "y-installo.sh",
+                "y-install_depso.sh",
                 "y-venvo.sh"
             ]
         for f in otherFiles:
@@ -517,7 +517,7 @@ class PfsInterpreterPortableZip(Command):
         self.__write_run_sh(isCli=False)
         self.__write_run_sh(isCli=True)
         # change file perms of bash scripts
-        for tmpFn in ["run-gui.sh", "run-cli.sh", "y-installo.sh", "y-venvo.sh"]:
+        for tmpFn in ["run-gui.sh", "run-cli.sh", "y-install_depso.sh", "y-venvo.sh"]:
             tmpScriptPath = os.path.join(self.target_dir, tmpFn)
             os.chmod(tmpScriptPath, stat.S_IRUSR | stat.S_IWUSR  | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
         # create ZIP file
@@ -685,8 +685,8 @@ def __get_platform_scripts() -> List[str]:
     resArr = [
             os.path.join("scripts", "photofilmstrip.py"),
             os.path.join("scripts", "photofilmstrip-cli.py"),
-            os.path.join("windows", "photofilmstrip.bat"),
-            os.path.join("windows", "photofilmstrip-cli.bat")
+            os.path.join("scripts", "photofilmstrip.bat"),
+            os.path.join("scripts", "photofilmstrip-cli.bat")
         ]
     return resArr
 

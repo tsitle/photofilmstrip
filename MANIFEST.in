@@ -2,16 +2,18 @@ recursive-include data *
 recursive-include po *
 recursive-include docs *
 
-include windows/photofilmstrip.bat
-include windows/photofilmstrip-cli.bat
+include scripts/photofilmstrip.bat
+include scripts/photofilmstrip-cli.bat
 include COPYING
 include LICENSE
 include Makefile
 include MANIFEST.in
 include README.md
+include README-compiling.md
+include README-running.md
 include make.bat
 include requirements.txt
 include requirements_dev.txt
-include y-installo.sh
-include y-installo_dev.sh
+include y-install_depso.sh
+include y-install_depso_dev.sh
 include y-venvo.sh
