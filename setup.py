@@ -429,6 +429,14 @@ class PfsWinPortableExe(Command):
                 os.makedirs(targetDir)
             for f in filelist:
                 self.copy_file(f, targetDir)
+        # copy files from root directory
+        otherFiles = [
+                "COPYING",
+                "LICENSE",
+                "README-running.md"
+            ]
+        for f in otherFiles:
+            self.copy_file(f, self.target_dir)
         #
         gLogger.info(f"Built portable executable at '{self.target_dir}'")
 
@@ -500,7 +508,7 @@ class PfsInterpreterPortableZip(Command):
         otherFiles = [
                 "COPYING",
                 "LICENSE",
-                "README.md",
+                "README-running.md",
                 "requirements.txt",
                 "y-install_depso.sh",
                 "y-venvo.sh"
