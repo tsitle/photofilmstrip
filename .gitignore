@@ -3,6 +3,7 @@
 /x-*.bat
 /.msys*/
 /release-tmp/
+CHANGELOG-temp.md
 
 /.idea
 
@@ -24,3 +25,6 @@ _scmInfo.py
 
 .settings
 .PhotoFilmStrip
+
+# OS files
+.DS_Store
