@@ -11,4 +11,6 @@ If you'd like to compile the application yourself see [README-compiling.md](READ
 
 ## Running the application
 
-See [README-running.md](README-running.md)
+The latest release can be downloaded from [https://github.com/tsitle/photofilmstrip/releases](https://github.com/tsitle/photofilmstrip/releases).
+
+For information on how to run the application see [README-running.md](README-running.md)

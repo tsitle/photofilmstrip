@@ -5,7 +5,8 @@ Simply select a couple of images, maybe add some music and then render the video
 You can also edit the image transitions, add effects to the images and change the
 time each image is displayed.
 
-The source code for this application can be found at the [PhotoFilmStrip GitHub Repository](https://github.com/tsitle/photofilmstrip/).
+The source code for this application can be found at the [PhotoFilmStrip GitHub Repository](https://github.com/tsitle/photofilmstrip/).  
+The latest release can be downloaded from [https://github.com/tsitle/photofilmstrip/releases](https://github.com/tsitle/photofilmstrip/releases).
 
 ## MS Windows
 
